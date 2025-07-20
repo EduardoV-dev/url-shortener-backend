@@ -1,0 +1,11 @@
+node_modules/
+dist/
+coverage/
+
+# Environment variables
+.env
+.env.example
+
+# Prisma
+prisma/migrations
+src/generated
