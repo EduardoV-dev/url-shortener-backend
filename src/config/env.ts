@@ -2,14 +2,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-type NodeEnv = "development" | "production";
-
-interface EnvConfig {
-  PORT: number;
-  NODE_ENV: NodeEnv;
-}
-
-export const ENVS: Readonly<EnvConfig> = {
+export const ENVS = Object.freeze({
   PORT: Number(process.env.PORT) || 3000,
-  NODE_ENV: (process.env.NODE_ENV as NodeEnv) || "development",
-};
+  NODE_ENV: process.env.NODE_ENV || "development",
+  DATABASE_URL: process.env.DATABASE_URL || "",
+});

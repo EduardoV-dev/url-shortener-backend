@@ -1,5 +1,6 @@
 import { Prisma, Url } from "@/generated/prisma";
 import { UrlShortenerRepository } from "../repository";
+import { HTTP_STATUS } from "@/config/http-status";
 import { prismaMock } from "@/test/prisma-mock";
 import { HttpError } from "@/utils/http-error";
 import { PRISMA_CODES } from "@/constants/prisma-codes";
@@ -49,7 +50,7 @@ describe("UrlShortenerRepository", () => {
       const response = repo.create(createParams);
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", 500);
+      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
     });
   });
@@ -94,7 +95,7 @@ describe("UrlShortenerRepository", () => {
       const response = repo.get(shortCode);
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", 500);
+      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(prismaMock.url.findFirst).toHaveBeenCalledTimes(1);
     });
   });
@@ -144,7 +145,7 @@ describe("UrlShortenerRepository", () => {
 
       const response = repo.update("non-existing-code", {});
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", 404);
+      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.NOT_FOUND);
       expect(prismaMock.url.update).toHaveBeenCalledTimes(1);
     });
 
@@ -154,7 +155,7 @@ describe("UrlShortenerRepository", () => {
       const response = repo.update("any-code", {});
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", 500);
+      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(prismaMock.url.update).toHaveBeenCalledTimes(1);
     });
   });
@@ -189,7 +190,7 @@ describe("UrlShortenerRepository", () => {
       const response = repo.delete("non-existing-code");
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", 404);
+      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.NOT_FOUND);
       expect(prismaMock.url.delete).toHaveBeenCalledTimes(1);
     });
 

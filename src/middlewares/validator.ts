@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from "@/config/http-status";
 import { Request, Response, NextFunction } from "express";
 import { AnyZodObject, ZodError } from "zod";
 
@@ -19,22 +20,16 @@ const groupErrors = (errors: ZodError): ValidationErrors => {
 
 export const validateRequest =
   (schema: AnyZodObject) =>
-  async (
-    req: Request,
-    res: Response<APIResponse<unknown>>,
-    next: NextFunction,
-  ) => {
+  async (req: Request, res: Response<APIResponse>, next: NextFunction) => {
     try {
       schema.parse(req.body);
       next();
     } catch (err) {
-      res.status(400).json({
-        message: "",
+      res.status(HTTP_STATUS.BAD_REQUEST).json({
+        success: false,
+        message: "Validation failed",
         data: null,
-        error: {
-          message: "Validation error",
-          data: groupErrors(err as ZodError),
-        },
+        error: groupErrors(err as ZodError),
       });
     }
   };

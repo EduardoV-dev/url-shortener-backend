@@ -56,4 +56,81 @@ describe("UrlShortenerController", () => {
       expect(res.json).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe("getUrl", () => {
+    const req = { params: { shortCode: "asdfas" } } as Request<{
+      shortCode: string;
+    }>;
+
+    it("should return 200 and the url on success", async () => {
+      const url: Url = {
+        id: 1,
+        shortCode: "asdfas",
+        originalUrl: "https://example.com",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        clickCount: 0,
+      };
+      mockService.getUrl.mockResolvedValue(url);
+
+      await controller.getUrlByShortCode(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return 404 if url not found", async () => {
+      mockService.getUrl.mockRejectedValue(new HttpError("Url not found", 404));
+
+      await controller.getUrlByShortCode(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return 500 on service error", async () => {
+      mockService.getUrl.mockRejectedValue(new HttpError("Service error", 500));
+
+      await controller.getUrlByShortCode(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("deleteUrl", () => {
+    const req = { params: { shortCode: "asdfas" } } as Request<{
+      shortCode: string;
+    }>;
+
+    it("should return 200 on successful delete", async () => {
+      mockService.deleteUrl.mockResolvedValue({ id: 119 } as Url);
+
+      await controller.deleteUrl(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return 404 if url not found for delete", async () => {
+      mockService.deleteUrl.mockRejectedValue(
+        new HttpError("Url not found", 404),
+      );
+
+      await controller.deleteUrl(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledTimes(1);
+    });
+
+    it("should return 500 on service error during delete", async () => {
+      const error = new HttpError("Service error", 500);
+      mockService.deleteUrl.mockRejectedValue(error);
+
+      await controller.deleteUrl(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.json).toHaveBeenCalledTimes(1);
+    });
+  });
 });

@@ -2,6 +2,7 @@ import { Repository } from "./repository";
 import { Url } from "@/generated/prisma";
 import { HttpError } from "@/utils/http-error";
 import { CodeGenerator } from "./utils";
+import { HTTP_STATUS } from "@/config/http-status";
 
 /**
  * Service interface for URL shortener business logic.
@@ -27,10 +28,10 @@ export interface Service {
   /**
    * Deletes a URL by its short code.
    * @param shortCode - The short code to delete.
-   * @returns The deleted Url object or null if not found.
+   * @returns The deleted Url object.
    * @throws HttpError if deletion fails.
    */
-  deleteUrl: (shortCode: string) => Promise<Url | null>;
+  deleteUrl: (shortCode: string) => Promise<Url>;
 }
 
 /**
@@ -51,32 +52,28 @@ export class UrlShortenerService implements Service {
       const shortCode: string = await this.codeGenerator.generateByRange(6, 10);
       return this.repository.create({ shortCode, originalUrl: url });
     } catch (err) {
-      const error = err as Error;
-      throw new HttpError(error.message, 500, error);
+      throw err;
     }
   };
 
-  public getUrl: Service["createShortUrl"] = async (shortCode) => {
+  public getUrl: Service["getUrl"] = async (shortCode) => {
     try {
       const url = await this.repository.get(shortCode);
-      if (!url) throw new HttpError("Url not found", 404);
+      if (!url) throw new HttpError("Url not found", HTTP_STATUS.NOT_FOUND);
 
       return this.repository.update(shortCode, {
         clickCount: url.clickCount + 1,
       });
     } catch (err) {
-      const error = err as Error;
-      throw new HttpError(error.message, 500, error);
+      throw err;
     }
   };
 
   public deleteUrl: Service["deleteUrl"] = async (shortCode) => {
     try {
-      const url = await this.repository.delete(shortCode);
-      return url;
+      return await this.repository.delete(shortCode);
     } catch (err) {
-      const error = err as Error;
-      throw new HttpError(error.message, 500, error);
+      throw err;
     }
   };
 }

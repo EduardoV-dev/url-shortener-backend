@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from "@/config/http-status";
 import { PRISMA_CODES } from "@/constants/prisma-codes";
 import { Prisma, Url } from "@/generated/prisma";
 import { prisma } from "@/storage/prisma";
@@ -60,7 +61,11 @@ export class UrlShortenerRepository implements Repository {
         data: params,
       });
     } catch (err) {
-      throw new HttpError("Error creating url", 500, err);
+      throw new HttpError(
+        "Error creating url",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        err,
+      );
     }
   };
 
@@ -71,7 +76,11 @@ export class UrlShortenerRepository implements Repository {
       });
       return url;
     } catch (err) {
-      throw new HttpError("Error retrieving url", 500, err);
+      throw new HttpError(
+        "Error retrieving url",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        err,
+      );
     }
   };
 
@@ -88,9 +97,17 @@ export class UrlShortenerRepository implements Repository {
       });
     } catch (err) {
       if (validatePrismaRecordNotFound(err))
-        throw new HttpError("Url to update not found", 404, err);
+        throw new HttpError(
+          "Url to update not found",
+          HTTP_STATUS.NOT_FOUND,
+          err,
+        );
 
-      throw new HttpError("Error updating url", 500, err);
+      throw new HttpError(
+        "Error updating url",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        err,
+      );
     }
   };
 
@@ -103,9 +120,17 @@ export class UrlShortenerRepository implements Repository {
       });
     } catch (err) {
       if (validatePrismaRecordNotFound(err))
-        throw new HttpError("Url to delete not found", 404, err);
+        throw new HttpError(
+          "Url to delete not found",
+          HTTP_STATUS.NOT_FOUND,
+          err,
+        );
 
-      throw new HttpError("Error deleting url", 500, err);
+      throw new HttpError(
+        "Error deleting url",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        err,
+      );
     }
   };
 }
