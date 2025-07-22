@@ -17,8 +17,8 @@ const jestConfig: Config = {
   testMatch: [
     "**/__tests__/**/*.ts",
     "**/?(*.)+(spec|test).ts",
-    "!**/mock.ts",
-    "!**/*.mock.ts",
+    "!**/mocks.ts",
+    "!**/*.mocks.ts",
   ],
   transform: {
     "^.+\\.js$": "babel-jest",

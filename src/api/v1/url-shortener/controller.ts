@@ -14,18 +14,18 @@ export class UrlShortenerController implements Controller {
 
   public createUrl: Controller["createUrl"] = async (req, res) => {
     try {
-      const { url } = req.body;
-      const response = await this.service.createShortUrl(url);
+      const { url: urlString } = req.body;
+      const url = await this.service.createShortUrl(urlString);
 
       res.status(HTTP_STATUS.CREATED).json({
         success: true,
         message: "Short url created successfully!",
-        data: response,
+        data: url,
         error: null,
       });
     } catch (err) {
       const error = err as HttpError;
-      logger.error(`Error creating short URL: ${{ error }}`);
+      logger.error("[Controller] createUrl", error);
 
       res.status(error.statusCode).json({
         success: false,
@@ -42,17 +42,17 @@ export class UrlShortenerController implements Controller {
   ) => {
     try {
       const { shortCode } = req.params;
-      const response = await this.service.getUrl(shortCode);
+      const url = await this.service.updateClickCount(shortCode);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
-        data: response,
+        data: url,
         error: null,
         message: "Url retrieved successfully!",
       });
     } catch (err) {
       const error = err as HttpError;
-      logger.error(`Error retrieving URL: ${{ error }}`);
+      logger.error("[Controller] getUrlByShortCode", error);
 
       res.status(error.statusCode).json({
         success: false,
@@ -66,17 +66,17 @@ export class UrlShortenerController implements Controller {
   public deleteUrl: Controller["deleteUrl"] = async (req, res) => {
     try {
       const { shortCode } = req.params;
-      const response = await this.service.deleteUrl(shortCode);
+      const url = await this.service.deleteUrl(shortCode);
 
       res.status(HTTP_STATUS.OK).json({
         success: true,
-        data: response,
+        data: url,
         error: null,
         message: "Url deleted successfully!",
       });
     } catch (err) {
       const error = err as HttpError;
-      logger.error(`error: ${{ error }}`);
+      logger.error("[Controller] deleteUrl", error);
 
       res.status(error.statusCode).json({
         success: false,

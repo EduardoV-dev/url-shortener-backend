@@ -3,9 +3,10 @@ import { ParamsDictionary } from "express-serve-static-core";
 
 declare namespace NodeJS {
   interface ProcessEnv {
-    PORT: string;
-    NODE_ENV: "development" | "production";
     DATABASE_URL: string;
+    NODE_ENV: "development" | "test" | "production";
+    PORT: string;
+    SWAGGER_SERVER_V1: string;
   }
 }
 

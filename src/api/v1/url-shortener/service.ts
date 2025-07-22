@@ -15,7 +15,6 @@ export interface Service {
    * @throws HttpError if creation fails.
    */
   createShortUrl: (url: string) => Promise<Url>;
-
   /**
    * Retrieves and updates a URL by its short code.
    * Increments the click count.
@@ -24,7 +23,6 @@ export interface Service {
    * @throws HttpError if not found or retrieval fails.
    */
   getUrl: (shortCode: string) => Promise<Url>;
-
   /**
    * Deletes a URL by its short code.
    * @param shortCode - The short code to delete.
@@ -32,6 +30,22 @@ export interface Service {
    * @throws HttpError if deletion fails.
    */
   deleteUrl: (shortCode: string) => Promise<Url>;
+  /**
+   * Updates a URL by its short code. Updates only click count and/or original URL.
+   * @param shortCode - The short code of the URL to update.
+   * @param data - The partial Url object containing fields to update.
+   * @returns The updated Url properties.
+   * @throws HttpError if update fails.
+   */
+  updateUrl: (shortCode: string, data: Partial<Url>) => Promise<Url>;
+  /**
+   * Updates the click count of a URL by its short code.
+   * Increments the click count by 1.
+   * @param shortCode - The short code of the URL to update.
+   * @returns The updated Url object with incremented click count.
+   * @throws HttpError if retrieval or update fails.
+   */
+  updateClickCount: (shortCode: string) => Promise<Url>;
 }
 
 /**
@@ -61,9 +75,7 @@ export class UrlShortenerService implements Service {
       const url = await this.repository.get(shortCode);
       if (!url) throw new HttpError("Url not found", HTTP_STATUS.NOT_FOUND);
 
-      return this.repository.update(shortCode, {
-        clickCount: url.clickCount + 1,
-      });
+      return url;
     } catch (err) {
       throw err;
     }
@@ -72,6 +84,32 @@ export class UrlShortenerService implements Service {
   public deleteUrl: Service["deleteUrl"] = async (shortCode) => {
     try {
       return await this.repository.delete(shortCode);
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  public updateUrl: Service["updateUrl"] = async (
+    shortCode,
+    { clickCount, originalUrl },
+  ) => {
+    try {
+      return await this.repository.update(shortCode, {
+        clickCount,
+        originalUrl,
+      });
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  public updateClickCount: Service["updateClickCount"] = async (shortCode) => {
+    try {
+      const url = this.getUrl(shortCode);
+
+      return await this.updateUrl(shortCode, {
+        clickCount: (await url).clickCount + 1,
+      });
     } catch (err) {
       throw err;
     }

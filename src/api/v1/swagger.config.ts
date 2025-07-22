@@ -1,3 +1,4 @@
+import { ENVS } from "@/config/env";
 import swaggerJSDoc from "swagger-jsdoc";
 
 const swaggerDefinition: swaggerJSDoc.SwaggerDefinition = {
@@ -14,7 +15,7 @@ const swaggerDefinition: swaggerJSDoc.SwaggerDefinition = {
   },
   servers: [
     {
-      url: "http://localhost:3000/api/v1",
+      url: ENVS.SWAGGER_SERVER_V1,
     },
   ],
   components: {

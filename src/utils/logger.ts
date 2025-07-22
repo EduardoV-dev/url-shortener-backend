@@ -1,21 +1,21 @@
 export type LogLevel = "info" | "warn" | "error";
 
 export class Logger {
-  private formatMessage(level: LogLevel, message: string): string {
+  private formatMessage(level: LogLevel): string {
     const timestamp = new Date().toISOString();
-    return `[${timestamp}] [${level.toUpperCase()}]: ${message}`;
+    return `[${timestamp}] [${level.toUpperCase()}]:`;
   }
 
-  public info(message: string): void {
-    console.info(this.formatMessage("info", message));
+  public info(...args: unknown[]): void {
+    console.info(this.formatMessage("info"), ...args);
   }
 
-  public warn(message: string): void {
-    console.warn(this.formatMessage("warn", message));
+  public warn(...args: unknown[]): void {
+    console.warn(this.formatMessage("warn"), ...args);
   }
 
-  public error(message: string): void {
-    console.error(this.formatMessage("error", message));
+  public error(...args: unknown[]): void {
+    console.error(this.formatMessage("error"), ...args);
   }
 }
 

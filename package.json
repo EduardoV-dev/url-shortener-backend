@@ -13,7 +13,7 @@
     "lint": "eslint 'src/**/*.ts'",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
-    "start": "node dist/server.js",
+    "start": "node dist/src/server.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch"

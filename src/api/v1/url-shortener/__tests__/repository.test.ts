@@ -4,6 +4,7 @@ import { HTTP_STATUS } from "@/config/http-status";
 import { prismaMock } from "@/test/prisma-mock";
 import { HttpError } from "@/utils/http-error";
 import { PRISMA_CODES } from "@/constants/prisma-codes";
+import { mockUrl } from "./mocks";
 
 const PRISMA_RECORD_NOT_FOUND_ERROR = new Prisma.PrismaClientKnownRequestError(
   "Record not found",
@@ -19,27 +20,19 @@ describe("UrlShortenerRepository", () => {
 
   describe("create", () => {
     const createParams = {
-      originalUrl: "https://github.com/EduardoV-dev",
-      shortCode: "hello-world",
+      originalUrl: mockUrl.originalUrl,
+      shortCode: mockUrl.shortCode,
     };
 
     it("Should create a new url", async () => {
-      const createdUrl: Url = {
-        ...createParams,
-        clickCount: 0,
-        createdAt: new Date(),
-        id: 1,
-        updatedAt: new Date(),
-      };
-
-      prismaMock.url.create.mockResolvedValue(createdUrl);
+      prismaMock.url.create.mockResolvedValue(mockUrl);
       const response = await repo.create(createParams);
 
       expect(prismaMock.url.create).toHaveBeenCalledWith({
         data: createParams,
       });
       expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
-      expect(response).toEqual(createdUrl);
+      expect(response).toEqual(mockUrl);
     });
 
     it("Should throw an error if url could not be created", () => {
@@ -50,7 +43,10 @@ describe("UrlShortenerRepository", () => {
       const response = repo.create(createParams);
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response).rejects.toHaveProperty(
+        "statusCode",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
       expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
     });
   });
@@ -58,19 +54,11 @@ describe("UrlShortenerRepository", () => {
   describe("get", () => {
     const shortCode = "hello-world";
 
-    const existingUrl: Url = {
-      clickCount: 2,
-      createdAt: new Date(),
-      id: 2,
-      originalUrl: "https://github.com/EduardoV-dev",
-      shortCode,
-      updatedAt: new Date(),
-    };
-
     it("Should retrieve a existing url register", async () => {
-      prismaMock.url.findFirst.mockResolvedValue(existingUrl);
+      const url = { ...mockUrl, shortCode };
+      prismaMock.url.findFirst.mockResolvedValue(url);
 
-      expect(await repo.get(shortCode)).toEqual(existingUrl);
+      expect(await repo.get(shortCode)).toEqual(url);
       expect(prismaMock.url.findFirst).toHaveBeenCalledWith({
         where: { shortCode },
       });
@@ -95,7 +83,10 @@ describe("UrlShortenerRepository", () => {
       const response = repo.get(shortCode);
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response).rejects.toHaveProperty(
+        "statusCode",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
       expect(prismaMock.url.findFirst).toHaveBeenCalledTimes(1);
     });
   });
@@ -109,17 +100,8 @@ describe("UrlShortenerRepository", () => {
 
       const shortCode = "code";
 
-      const originalData: Url = {
-        id: 3,
-        shortCode,
-        originalUrl: "https://oldurl.com",
-        clickCount: 5,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
       const updatedData: Url = {
-        ...originalData,
+        ...mockUrl,
         ...dataToUpdate,
       };
 
@@ -145,7 +127,10 @@ describe("UrlShortenerRepository", () => {
 
       const response = repo.update("non-existing-code", {});
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.NOT_FOUND);
+      expect(response).rejects.toHaveProperty(
+        "statusCode",
+        HTTP_STATUS.NOT_FOUND,
+      );
       expect(prismaMock.url.update).toHaveBeenCalledTimes(1);
     });
 
@@ -155,7 +140,10 @@ describe("UrlShortenerRepository", () => {
       const response = repo.update("any-code", {});
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(response).rejects.toHaveProperty(
+        "statusCode",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
       expect(prismaMock.url.update).toHaveBeenCalledTimes(1);
     });
   });
@@ -190,7 +178,10 @@ describe("UrlShortenerRepository", () => {
       const response = repo.delete("non-existing-code");
 
       expect(response).rejects.toThrow(HttpError);
-      expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.NOT_FOUND);
+      expect(response).rejects.toHaveProperty(
+        "statusCode",
+        HTTP_STATUS.NOT_FOUND,
+      );
       expect(prismaMock.url.delete).toHaveBeenCalledTimes(1);
     });
 

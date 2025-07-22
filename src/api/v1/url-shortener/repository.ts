@@ -24,14 +24,12 @@ export interface Repository {
    * @returns The created Url object.
    */
   create: (params: CreateParams) => Promise<Url>;
-
   /**
    * Retrieves a URL by its short code.
    * @param shortCode - The short code to search for.
    * @returns The Url object if found, otherwise null.
    */
   get: (shortCode: string) => Promise<Url | null>;
-
   /**
    * Updates a URL by its short code.
    * @param shortCode - The short code to update.
@@ -40,7 +38,6 @@ export interface Repository {
    * @throws Error if the URL is not found or update fails.
    */
   update: (shortCode: string, data: Partial<Url>) => Promise<Url>;
-
   /**
    * Deletes a URL by its short code.
    * @param shortCode - The short code to delete.

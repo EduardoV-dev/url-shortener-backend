@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { UrlShortenerController } from "../controller";
 import { Service } from "../service";
 import { HttpError } from "@/utils/http-error";
-import { Url } from "@/generated/prisma";
+import { mockUrl } from "./mocks";
 
 describe("UrlShortenerController", () => {
   let controller: UrlShortenerController;
@@ -10,11 +10,15 @@ describe("UrlShortenerController", () => {
   let res: jest.Mocked<Response>;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
     mockService = {
       createShortUrl: jest.fn(),
       getUrl: jest.fn(),
       deleteUrl: jest.fn(),
-    } as jest.Mocked<Service>;
+      updateUrl: jest.fn(),
+      updateClickCount: jest.fn(),
+    };
 
     controller = new UrlShortenerController(mockService);
 
@@ -22,22 +26,12 @@ describe("UrlShortenerController", () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn().mockReturnThis(),
     } as unknown as jest.Mocked<Response>;
-
-    jest.clearAllMocks();
   });
 
   describe("createUrl", () => {
     it("should return 201 and the short url on success", async () => {
       const req = { body: { url: "https://example.com" } } as Request;
-      const shortUrl: Url = {
-        id: 1,
-        shortCode: "asdfas",
-        originalUrl: "https://example.com",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        clickCount: 0,
-      };
-      mockService.createShortUrl.mockResolvedValue(shortUrl);
+      mockService.createShortUrl.mockResolvedValue(mockUrl);
 
       await controller.createUrl(req, res);
 
@@ -48,6 +42,7 @@ describe("UrlShortenerController", () => {
     it("should return 500 and error message on failure", async () => {
       const req = { body: { url: "https://example.com" } } as Request;
       const error = new HttpError("Could not create url", 500);
+
       mockService.createShortUrl.mockRejectedValue(error);
 
       await controller.createUrl(req, res);
@@ -62,16 +57,11 @@ describe("UrlShortenerController", () => {
       shortCode: string;
     }>;
 
-    it("should return 200 and the url on success", async () => {
-      const url: Url = {
-        id: 1,
-        shortCode: "asdfas",
-        originalUrl: "https://example.com",
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        clickCount: 0,
-      };
-      mockService.getUrl.mockResolvedValue(url);
+    it("should return 200 status code and the url on success", async () => {
+      mockService.updateClickCount.mockResolvedValue({
+        ...mockUrl,
+        clickCount: 1,
+      });
 
       await controller.getUrlByShortCode(req, res);
 
@@ -80,7 +70,9 @@ describe("UrlShortenerController", () => {
     });
 
     it("should return 404 if url not found", async () => {
-      mockService.getUrl.mockRejectedValue(new HttpError("Url not found", 404));
+      mockService.updateClickCount.mockRejectedValue(
+        new HttpError("Url not found", 404),
+      );
 
       await controller.getUrlByShortCode(req, res);
 
@@ -89,7 +81,9 @@ describe("UrlShortenerController", () => {
     });
 
     it("should return 500 on service error", async () => {
-      mockService.getUrl.mockRejectedValue(new HttpError("Service error", 500));
+      mockService.updateClickCount.mockRejectedValue(
+        new HttpError("Service error", 500),
+      );
 
       await controller.getUrlByShortCode(req, res);
 
@@ -104,7 +98,7 @@ describe("UrlShortenerController", () => {
     }>;
 
     it("should return 200 on successful delete", async () => {
-      mockService.deleteUrl.mockResolvedValue({ id: 119 } as Url);
+      mockService.deleteUrl.mockResolvedValue(mockUrl);
 
       await controller.deleteUrl(req, res);
 
