@@ -3,6 +3,7 @@ import { ParamsDictionary } from "express-serve-static-core";
 
 declare namespace NodeJS {
   interface ProcessEnv {
+    CORS_ORIGINS: string;
     DATABASE_URL: string;
     NODE_ENV: "development" | "test" | "production";
     PORT: string;

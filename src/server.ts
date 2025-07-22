@@ -1,4 +1,5 @@
 import "module-alias/register";
+import cors from "cors";
 import express, { Response } from "express";
 import serverRouter from "./api/v1";
 import { ENVS } from "./config/env";
@@ -6,6 +7,14 @@ import { HTTP_STATUS } from "./config/http-status";
 import { logger } from "./utils/logger";
 
 const app = express();
+
+const ALLOWED_ORIGINS = ENVS.CORS_ORIGINS.split(",");
+
+app.use(
+  cors({
+    origin: ALLOWED_ORIGINS.map((origin) => origin.trim()),
+  }),
+);
 
 app.use(express.json());
 app.use(serverRouter);
