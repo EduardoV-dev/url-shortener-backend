@@ -57,9 +57,7 @@ describe("UrlShortenerService", () => {
     });
 
     it("Should throw error when url could not be created", async () => {
-      mockRepository.create.mockRejectedValue(
-        new HttpError("Database error", 500),
-      );
+      mockRepository.create.mockRejectedValue(new HttpError("Database error", 500));
 
       const response = service.createShortUrl(paramUrl);
 
@@ -84,18 +82,12 @@ describe("UrlShortenerService", () => {
       const response = service.getUrl("not-found");
 
       await expect(response).rejects.toThrow(HttpError);
-      await expect(response).rejects.toHaveProperty(
-        "statusCode",
-        HTTP_STATUS.NOT_FOUND,
-      );
+      await expect(response).rejects.toHaveProperty("statusCode", HTTP_STATUS.NOT_FOUND);
     });
 
     it("Should throw HttpError 500 status code (Internal Server Error)", async () => {
       mockRepository.get.mockRejectedValue(
-        new HttpError(
-          "Internal server error",
-          HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        ),
+        new HttpError("Internal server error", HTTP_STATUS.INTERNAL_SERVER_ERROR),
       );
 
       const response = service.getUrl("fail");
@@ -146,15 +138,9 @@ describe("UrlShortenerService", () => {
       };
       mockRepository.update.mockResolvedValue(updatedUrl);
 
-      const response = await service.updateUrl(
-        updatedUrl.shortCode,
-        updatedUrl,
-      );
+      const response = await service.updateUrl(updatedUrl.shortCode, updatedUrl);
 
-      expect(mockRepository.update).toHaveBeenCalledWith(
-        updatedUrl.shortCode,
-        updatedUrl,
-      );
+      expect(mockRepository.update).toHaveBeenCalledWith(updatedUrl.shortCode, updatedUrl);
       expect(response).toEqual(updatedUrl);
     });
 

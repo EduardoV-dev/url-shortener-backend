@@ -36,10 +36,7 @@ export class UrlShortenerController implements Controller {
     }
   };
 
-  public getUrlByShortCode: Controller["getUrlByShortCode"] = async (
-    req,
-    res,
-  ) => {
+  public getUrlByShortCode: Controller["getUrlByShortCode"] = async (req, res) => {
     try {
       const { shortCode } = req.params;
       const url = await this.service.updateClickCount(shortCode);

@@ -89,10 +89,7 @@ export class UrlShortenerService implements Service {
     }
   };
 
-  public updateUrl: Service["updateUrl"] = async (
-    shortCode,
-    { clickCount, originalUrl },
-  ) => {
+  public updateUrl: Service["updateUrl"] = async (shortCode, { clickCount, originalUrl }) => {
     try {
       return await this.repository.update(shortCode, {
         clickCount,

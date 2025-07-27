@@ -58,11 +58,7 @@ export class UrlShortenerRepository implements Repository {
         data: params,
       });
     } catch (err) {
-      throw new HttpError(
-        "Error creating url",
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        err,
-      );
+      throw new HttpError("Error creating url", HTTP_STATUS.INTERNAL_SERVER_ERROR, err);
     }
   };
 
@@ -73,11 +69,7 @@ export class UrlShortenerRepository implements Repository {
       });
       return url;
     } catch (err) {
-      throw new HttpError(
-        "Error retrieving url",
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        err,
-      );
+      throw new HttpError("Error retrieving url", HTTP_STATUS.INTERNAL_SERVER_ERROR, err);
     }
   };
 
@@ -94,17 +86,9 @@ export class UrlShortenerRepository implements Repository {
       });
     } catch (err) {
       if (validatePrismaRecordNotFound(err))
-        throw new HttpError(
-          "Url to update not found",
-          HTTP_STATUS.NOT_FOUND,
-          err,
-        );
+        throw new HttpError("Url to update not found", HTTP_STATUS.NOT_FOUND, err);
 
-      throw new HttpError(
-        "Error updating url",
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        err,
-      );
+      throw new HttpError("Error updating url", HTTP_STATUS.INTERNAL_SERVER_ERROR, err);
     }
   };
 
@@ -117,17 +101,9 @@ export class UrlShortenerRepository implements Repository {
       });
     } catch (err) {
       if (validatePrismaRecordNotFound(err))
-        throw new HttpError(
-          "Url to delete not found",
-          HTTP_STATUS.NOT_FOUND,
-          err,
-        );
+        throw new HttpError("Url to delete not found", HTTP_STATUS.NOT_FOUND, err);
 
-      throw new HttpError(
-        "Error deleting url",
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        err,
-      );
+      throw new HttpError("Error deleting url", HTTP_STATUS.INTERNAL_SERVER_ERROR, err);
     }
   };
 }
@@ -135,5 +111,4 @@ export class UrlShortenerRepository implements Repository {
 // === Utils
 
 const validatePrismaRecordNotFound = (err: unknown): boolean =>
-  err instanceof Prisma.PrismaClientKnownRequestError &&
-  err.code === PRISMA_CODES.RECORD_NOT_FOUND;
+  err instanceof Prisma.PrismaClientKnownRequestError && err.code === PRISMA_CODES.RECORD_NOT_FOUND;

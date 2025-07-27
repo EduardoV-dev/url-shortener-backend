@@ -70,9 +70,7 @@ describe("UrlShortenerController", () => {
     });
 
     it("should return 404 if url not found", async () => {
-      mockService.updateClickCount.mockRejectedValue(
-        new HttpError("Url not found", 404),
-      );
+      mockService.updateClickCount.mockRejectedValue(new HttpError("Url not found", 404));
 
       await controller.getUrlByShortCode(req, res);
 
@@ -81,9 +79,7 @@ describe("UrlShortenerController", () => {
     });
 
     it("should return 500 on service error", async () => {
-      mockService.updateClickCount.mockRejectedValue(
-        new HttpError("Service error", 500),
-      );
+      mockService.updateClickCount.mockRejectedValue(new HttpError("Service error", 500));
 
       await controller.getUrlByShortCode(req, res);
 
@@ -107,9 +103,7 @@ describe("UrlShortenerController", () => {
     });
 
     it("should return 404 if url not found for delete", async () => {
-      mockService.deleteUrl.mockRejectedValue(
-        new HttpError("Url not found", 404),
-      );
+      mockService.deleteUrl.mockRejectedValue(new HttpError("Url not found", 404));
 
       await controller.deleteUrl(req, res);
 

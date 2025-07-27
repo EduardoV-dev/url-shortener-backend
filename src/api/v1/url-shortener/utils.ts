@@ -7,10 +7,7 @@ export class ShortCodeGenerator implements CodeGenerator {
     return Math.floor(Math.random() * (max - min + 1) + min);
   };
 
-  public generateByRange: CodeGenerator["generateByRange"] = async (
-    min,
-    max,
-  ) => {
+  public generateByRange: CodeGenerator["generateByRange"] = async (min, max) => {
     const { nanoid } = await import("nanoid");
     const codeLength = this.generateIntByRange(min, max);
     const shortCode = nanoid(codeLength);
