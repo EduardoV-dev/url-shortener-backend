@@ -4,6 +4,7 @@
   "main": "index.js",
   "author": "Eduardo Varela",
   "license": "MIT",
+  "type": "module",
   "_moduleAliases": {
     "@": "./src"
   },
@@ -14,7 +15,7 @@
     "format:check": "prettier --check **/*.{js,mjs,ts,mts,json,yaml}",
     "lint": "eslint **/*.{js,mjs,ts,mts} --fix",
     "lint:check": "eslint **/*.{js,mjs,ts,mts}",
-    "prepare": "husky",
+    "prepare": "node .husky/install.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "start": "node dist/src/server.js",

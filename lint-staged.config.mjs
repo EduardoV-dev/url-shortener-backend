@@ -1,4 +1,4 @@
 export default {
-  "*.{js,ts}": ["pnpm format:check", "pnpm lint:check"],
+  "*.{js,mjs,ts,mts}": ["pnpm format:check", "pnpm lint:check"],
   "*.{json,yaml}": ["pnpm format:check"],
 };
