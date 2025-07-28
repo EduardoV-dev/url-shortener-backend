@@ -1,6 +1,8 @@
 import "module-alias/register";
+
 import cors from "cors";
 import express, { Response } from "express";
+
 import serverRouter from "./api/v1";
 import { ENVS } from "./config/env";
 import { HTTP_STATUS } from "./config/http-status";

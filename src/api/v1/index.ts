@@ -1,7 +1,7 @@
 import { Router } from "express";
 import swaggerUi from "swagger-ui-express";
-import { swaggerSpec } from "./swagger.config";
 
+import { swaggerSpec } from "./swagger.config";
 import urlShortenerRoutes from "./url-shortener/routes";
 
 const v1ApiRouter = Router();

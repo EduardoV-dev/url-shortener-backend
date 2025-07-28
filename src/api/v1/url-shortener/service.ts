@@ -1,8 +1,9 @@
-import { Repository } from "./repository";
+import { HTTP_STATUS } from "@/config/http-status";
 import { Url } from "@/generated/prisma";
 import { HttpError } from "@/utils/http-error";
+
+import { Repository } from "./repository";
 import { CodeGenerator } from "./utils";
-import { HTTP_STATUS } from "@/config/http-status";
 
 /**
  * Service interface for URL shortener business logic.
@@ -62,53 +63,33 @@ export class UrlShortenerService implements Service {
   ) {}
 
   public createShortUrl: Service["createShortUrl"] = async (url) => {
-    try {
-      const shortCode: string = await this.codeGenerator.generateByRange(6, 10);
-      return this.repository.create({ shortCode, originalUrl: url });
-    } catch (err) {
-      throw err;
-    }
+    const shortCode: string = await this.codeGenerator.generateByRange(6, 10);
+    return this.repository.create({ shortCode, originalUrl: url });
   };
 
   public getUrl: Service["getUrl"] = async (shortCode) => {
-    try {
-      const url = await this.repository.get(shortCode);
-      if (!url) throw new HttpError("Url not found", HTTP_STATUS.NOT_FOUND);
+    const url = await this.repository.get(shortCode);
+    if (!url) throw new HttpError("Url not found", HTTP_STATUS.NOT_FOUND);
 
-      return url;
-    } catch (err) {
-      throw err;
-    }
+    return url;
   };
 
   public deleteUrl: Service["deleteUrl"] = async (shortCode) => {
-    try {
-      return await this.repository.delete(shortCode);
-    } catch (err) {
-      throw err;
-    }
+    return await this.repository.delete(shortCode);
   };
 
   public updateUrl: Service["updateUrl"] = async (shortCode, { clickCount, originalUrl }) => {
-    try {
-      return await this.repository.update(shortCode, {
-        clickCount,
-        originalUrl,
-      });
-    } catch (err) {
-      throw err;
-    }
+    return await this.repository.update(shortCode, {
+      clickCount,
+      originalUrl,
+    });
   };
 
   public updateClickCount: Service["updateClickCount"] = async (shortCode) => {
-    try {
-      const url = this.getUrl(shortCode);
+    const url = this.getUrl(shortCode);
 
-      return await this.updateUrl(shortCode, {
-        clickCount: (await url).clickCount + 1,
-      });
-    } catch (err) {
-      throw err;
-    }
+    return await this.updateUrl(shortCode, {
+      clickCount: (await url).clickCount + 1,
+    });
   };
 }

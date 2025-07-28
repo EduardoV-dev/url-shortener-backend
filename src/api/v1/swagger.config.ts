@@ -1,5 +1,6 @@
-import { ENVS } from "@/config/env";
 import swaggerJSDoc from "swagger-jsdoc";
+
+import { ENVS } from "@/config/env";
 
 const swaggerDefinition: swaggerJSDoc.SwaggerDefinition = {
   openapi: "3.1.0",

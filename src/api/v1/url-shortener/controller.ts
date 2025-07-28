@@ -1,10 +1,11 @@
-import { logger } from "@/utils/logger";
-import { Service } from "./service";
-import { HttpError } from "@/utils/http-error";
 import { HTTP_STATUS } from "@/config/http-status";
+import { HttpError } from "@/utils/http-error";
+import { logger } from "@/utils/logger";
+
+import { Service } from "./service";
 
 interface Controller {
-  createUrl: ControllerMethod<{}, { url: string }>;
+  createUrl: ControllerMethod<unknown, { url: string }>;
   getUrlByShortCode: ControllerMethod<{ shortCode: string }>;
   deleteUrl: ControllerMethod<{ shortCode: string }>;
 }

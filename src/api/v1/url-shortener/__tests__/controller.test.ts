@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
+
+import { HttpError } from "@/utils/http-error";
+
 import { UrlShortenerController } from "../controller";
 import { Service } from "../service";
-import { HttpError } from "@/utils/http-error";
 import { mockUrl } from "./mocks";
 
 describe("UrlShortenerController", () => {

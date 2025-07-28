@@ -1,36 +1,43 @@
 import js from "@eslint/js";
-import ts from "@typescript-eslint/eslint-plugin";
-import tsParser from "@typescript-eslint/parser";
-import prettier from "eslint-plugin-prettier";
-import eslintConfigPrettier from "eslint-config-prettier";
+import json from "@eslint/json";
+import { defineConfig } from "eslint/config";
+import prettierConfig from "eslint-config-prettier/flat";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
+import globals from "globals";
+import tseslint from "typescript-eslint";
 
-export default [
-  js.configs.recommended,
+export default defineConfig([
   {
-    files: ["**/*.{ts}"],
-    ...ts.configs.recommended,
-  },
-  {
-    files: ["**/*.{ts}"],
-    ...ts.configs.recommendedTypeChecked,
-  },
-  {
-    files: ["**/*.{ts}"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: {
-        project: "./tsconfig.json",
-        sourceType: "module",
-      },
+    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
+    plugins: { js, "simple-import-sort": simpleImportSort },
+    extends: ["js/recommended"],
+    languageOptions: { globals: globals.node },
+    rules: {
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
     },
+  },
+  // Spread the recommended TS configs!
+  ...tseslint.configs.recommended,
+  {
+    files: ["**/*.{ts,tsx,mts,cts}"],
     plugins: {
-      "@typescript-eslint": ts,
-      prettier,
+      "@typescript-eslint": tseslint.plugin,
+      "simple-import-sort": simpleImportSort,
     },
     rules: {
-      "@typescript-eslint/no-empty-object-type": "off",
-      "prettier/prettier": "error",
+      "@typescript-eslint/no-unused-vars": "warn",
+      "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
+      "simple-import-sort/imports": "error",
+      "simple-import-sort/exports": "error",
     },
   },
-  eslintConfigPrettier,
-];
+  {
+    files: ["**/*.json"],
+    plugins: { json },
+    language: "json/json",
+    extends: ["json/recommended"],
+  },
+  prettierConfig,
+]);

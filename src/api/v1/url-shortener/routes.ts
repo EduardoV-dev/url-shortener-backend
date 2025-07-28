@@ -1,10 +1,12 @@
 import { Router } from "express";
-import { UrlShortenerController } from "./controller";
+
 import { validateRequest } from "@/middlewares/validator";
-import { urlSchema } from "./validations";
+
+import { UrlShortenerController } from "./controller";
 import { UrlShortenerRepository } from "./repository";
 import { UrlShortenerService } from "./service";
 import { ShortCodeGenerator } from "./utils";
+import { urlSchema } from "./validations";
 
 const repo = new UrlShortenerRepository();
 const shortCodeGenerator = new ShortCodeGenerator();

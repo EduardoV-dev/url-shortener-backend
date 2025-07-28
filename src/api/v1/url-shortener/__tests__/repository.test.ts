@@ -1,9 +1,10 @@
-import { Prisma, Url } from "@/generated/prisma";
-import { UrlShortenerRepository } from "../repository";
 import { HTTP_STATUS } from "@/config/http-status";
+import { PRISMA_CODES } from "@/constants/prisma-codes";
+import { Prisma, Url } from "@/generated/prisma";
 import { prismaMock } from "@/test/prisma-mock";
 import { HttpError } from "@/utils/http-error";
-import { PRISMA_CODES } from "@/constants/prisma-codes";
+
+import { UrlShortenerRepository } from "../repository";
 import { mockUrl } from "./mocks";
 
 const PRISMA_RECORD_NOT_FOUND_ERROR = new Prisma.PrismaClientKnownRequestError("Record not found", {

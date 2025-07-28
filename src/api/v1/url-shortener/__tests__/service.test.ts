@@ -1,11 +1,11 @@
+import { HTTP_STATUS } from "@/config/http-status";
 import { Url } from "@/generated/prisma";
+import { HttpError } from "@/utils/http-error";
 
-import { UrlShortenerService } from "../service";
 import { Repository } from "../repository";
+import { UrlShortenerService } from "../service";
 import { CodeGenerator } from "../utils";
 import { mockUrl } from "./mocks";
-import { HttpError } from "@/utils/http-error";
-import { HTTP_STATUS } from "@/config/http-status";
 
 describe("UrlShortenerService", () => {
   let service: UrlShortenerService;
