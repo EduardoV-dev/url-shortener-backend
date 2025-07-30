@@ -1,0 +1,64 @@
+import { HTTP_STATUS } from "@/config/common";
+import { Url } from "@/generated/prisma";
+import { HttpError } from "@/utils/http-error";
+
+import { Repository } from "../repository";
+import { UrlShortenerService } from "../service";
+import { CodeGenerator } from "../utils";
+import { MOCK_URL } from "./mocks";
+
+describe("UrlShortenerService", () => {
+  let service: UrlShortenerService;
+  let mockRepository: jest.Mocked<Repository>;
+  let mockCodeGenerator: jest.Mocked<CodeGenerator>;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    mockRepository = { create: jest.fn() };
+    mockCodeGenerator = { generateByRange: jest.fn() };
+
+    service = new UrlShortenerService(mockRepository, mockCodeGenerator);
+  });
+
+  describe("createShortUrl", () => {
+    const paramUrl = "https://github.com/EduardoV-dev";
+    const mockGeneratedCode = "my-code";
+
+    it("Should generate a short code and create an URL using the repository", async () => {
+      const mockCreatedUrl: Url = {
+        ...MOCK_URL,
+        shortId: mockGeneratedCode,
+        longUrl: paramUrl,
+      };
+
+      mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
+      mockRepository.create.mockResolvedValue(mockCreatedUrl);
+
+      const response = await service.createShortUrl(paramUrl);
+
+      expect(mockCodeGenerator.generateByRange).toHaveBeenCalledTimes(1);
+      expect(mockCodeGenerator.generateByRange).toHaveBeenCalledWith(6, 10); // Internally, the code generator use 6 - 10 range
+
+      expect(mockRepository.create).toHaveBeenCalledTimes(1);
+      expect(mockRepository.create).toHaveBeenCalledWith({
+        shortId: mockGeneratedCode,
+        longUrl: paramUrl,
+      });
+
+      expect(response).toEqual(mockCreatedUrl);
+    });
+
+    it("Should throw error when url could not be created", async () => {
+      mockRepository.create.mockRejectedValue(new HttpError("Database error", 500));
+
+      const response = service.createShortUrl(paramUrl);
+
+      await expect(response).rejects.toThrow(HttpError);
+      await expect(response).rejects.toHaveProperty(
+        "statusCode",
+        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+      );
+    });
+  });
+});

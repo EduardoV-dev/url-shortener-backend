@@ -1,5 +1,6 @@
 export type LogLevel = "info" | "warn" | "error";
 
+// TODO: Replace with winston or similar logging library for production use
 export class Logger {
   private formatMessage(level: LogLevel): string {
     const timestamp = new Date().toISOString();

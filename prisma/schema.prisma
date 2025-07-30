@@ -14,11 +14,19 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  urls      Url[]
+}
+
 model Url {
-  clickCount  Int      @default(0)
-  createdAt   DateTime @default(now())
-  id          Int      @id @default(autoincrement())
-  originalUrl String
-  shortCode   String   @unique
-  updatedAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  shortId   String   @unique
+  longUrl   String
+  createdAt DateTime @default(now())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
 }

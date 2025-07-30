@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AnyZodObject, ZodError } from "zod";
 
-import { HTTP_STATUS } from "@/config/http-status";
+import { HTTP_STATUS } from "@/config/common";
 
 type ValidationErrors = { [x in string]: string };
 

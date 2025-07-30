@@ -2,17 +2,16 @@
 import { Request, Response } from "express";
 import { ParamsDictionary } from "express-serve-static-core";
 
-declare namespace NodeJS {
-  interface ProcessEnv {
-    CORS_ORIGINS: string;
-    DATABASE_URL: string;
-    NODE_ENV: "development" | "test" | "production";
-    PORT: string;
-    SWAGGER_SERVER_V1: string;
-  }
-}
-
 declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      CORS_ORIGINS: string;
+      DATABASE_URL: string;
+      NODE_ENV: "development" | "production" | "test";
+      PORT: string;
+      SWAGGER_API_SERVERS: string;
+    }
+  }
   type ControllerMethod<
     Params = ParamsDictionary,
     ReqBody = any,

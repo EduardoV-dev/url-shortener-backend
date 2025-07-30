@@ -40,4 +40,7 @@ export default defineConfig([
     extends: ["json/recommended"],
   },
   prettierConfig,
+  {
+    ignores: ["**/prisma/migrations/**", "**/src/generated/**", "**/node_modules/**", "**/dist/**"],
+  },
 ]);
