@@ -1,4 +1,4 @@
-import { HTTP_STATUS } from "@/config/common";
+import { HTTP_STATUS } from "@/constants/common";
 import { prismaMock } from "@/test/prisma-mock";
 
 import { UrlCreateParams, UrlShortenerRepository } from "../repository";

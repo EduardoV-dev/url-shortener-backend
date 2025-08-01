@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 
-import { HTTP_STATUS } from "@/config/common";
+import { HTTP_STATUS } from "@/constants/common";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 import { HttpError } from "@/utils/http-error";
 

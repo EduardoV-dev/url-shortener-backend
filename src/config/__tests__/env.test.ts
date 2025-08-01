@@ -15,6 +15,7 @@ describe("ENVS", () => {
     process.env.DATABASE_URL = "bar";
     process.env.NODE_ENV = "test";
     process.env.PORT = "1234";
+    process.env.LOG_LEVEL = "debug";
 
     const { ENVS } = await import("../env");
     expect(ENVS).toEqual({
@@ -22,6 +23,7 @@ describe("ENVS", () => {
       DATABASE_URL: "bar",
       NODE_ENV: "test",
       PORT: 1234,
+      LOG_LEVEL: "debug",
     });
   });
 
@@ -30,6 +32,7 @@ describe("ENVS", () => {
     process.env.DATABASE_URL = undefined;
     process.env.NODE_ENV = undefined;
     process.env.PORT = undefined;
+    process.env.LOG_LEVEL = undefined;
 
     const { ENVS } = await import("../env");
     expect(ENVS).toEqual({
@@ -37,6 +40,7 @@ describe("ENVS", () => {
       DATABASE_URL: "",
       NODE_ENV: "development",
       PORT: 3000,
+      LOG_LEVEL: "info",
     });
   });
 

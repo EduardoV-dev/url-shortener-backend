@@ -3,7 +3,7 @@ import morgan from "morgan";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 
-import { MORGAN_SETTING } from "@/config/common";
+import { MORGAN_SETTING } from "@/constants/common";
 
 import v1ApiRouter from "./v1";
 

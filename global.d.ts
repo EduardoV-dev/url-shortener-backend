@@ -7,6 +7,7 @@ declare global {
     interface ProcessEnv {
       CORS_ORIGINS: string | undefined;
       DATABASE_URL: string | undefined;
+      LOG_LEVEL: string | undefined;
       NODE_ENV: "development" | "production" | "test" | undefined;
       PORT: string | undefined;
     }

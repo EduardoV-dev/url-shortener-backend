@@ -4,8 +4,8 @@ import cors from "cors";
 import express, { Response } from "express";
 
 import serverRouter from "./api";
-import { HTTP_STATUS } from "./config/common";
 import { ENVS } from "./config/env";
+import { HTTP_STATUS } from "./constants/common";
 import { ApiErrorResponse } from "./utils/api-error-response";
 import { ApiSuccessResponse } from "./utils/api-success-response";
 

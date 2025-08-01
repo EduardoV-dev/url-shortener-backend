@@ -1,10 +1,12 @@
-// TODO: Move all of these to constants files
-
 export const API_VERSIONS = Object.freeze({
   V1: "v1",
 });
 
 export const MORGAN_SETTING = "tiny";
+
+export const PRISMA_CODES = Object.freeze({
+  RECORD_NOT_FOUND: "P2025",
+});
 
 export const HTTP_STATUS = Object.freeze({
   OK: 200,

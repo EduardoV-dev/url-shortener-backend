@@ -1,6 +1,6 @@
 import express from "express";
 
-import { HTTP_STATUS } from "./config/common";
+import { HTTP_STATUS } from "./constants/common";
 import { createServer } from "./server";
 import { createTestServer, TestServer } from "./test/test-server";
 

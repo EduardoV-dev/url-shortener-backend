@@ -1,4 +1,4 @@
-import { HTTP_STATUS } from "@/config/common";
+import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { prisma } from "@/storage/prisma";
 import { HttpError } from "@/utils/http-error";

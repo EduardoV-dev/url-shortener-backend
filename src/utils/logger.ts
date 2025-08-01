@@ -1,23 +1,35 @@
-export type LogLevel = "info" | "warn" | "error";
+import { createLogger, format, transports } from "winston";
 
-// TODO: Replace with winston or similar logging library for production use
-export class Logger {
-  private formatMessage(level: LogLevel): string {
-    const timestamp = new Date().toISOString();
-    return `[${timestamp}] [${level.toUpperCase()}]:`;
-  }
+const DEFAULT_LOG_LEVEL = process.env.LOG_LEVEL || "info";
+const TIMESTAMP_FORMAT = "YYYY-MM-DD HH:mm:ss";
 
-  public info(...args: unknown[]): void {
-    console.info(this.formatMessage("info"), ...args);
-  }
+const LOG_FILES = {
+  APP: "logs/app.log",
+  ERROR: "logs/error.log",
+  EXCEPTION: "logs/exception.log",
+  REJECTION: "logs/rejection.log",
+};
 
-  public warn(...args: unknown[]): void {
-    console.warn(this.formatMessage("warn"), ...args);
-  }
-
-  public error(...args: unknown[]): void {
-    console.error(this.formatMessage("error"), ...args);
-  }
-}
-
-export const logger = new Logger();
+export const logger = createLogger({
+  level: DEFAULT_LOG_LEVEL,
+  format: format.combine(
+    format.timestamp({ format: TIMESTAMP_FORMAT }),
+    format.errors({ stack: true }),
+    format.splat(),
+    format.json(),
+  ),
+  transports: [
+    new transports.Console({
+      format: format.combine(
+        format.colorize(),
+        format.printf(({ level, message, timestamp, stack }) => {
+          return `${timestamp} [${level}]: ${stack || message}`;
+        }),
+      ),
+    }),
+    new transports.File({ filename: LOG_FILES.APP }),
+    new transports.File({ filename: LOG_FILES.ERROR, level: "error" }),
+  ],
+  exceptionHandlers: [new transports.File({ filename: LOG_FILES.EXCEPTION })],
+  rejectionHandlers: [new transports.File({ filename: LOG_FILES.REJECTION })],
+});

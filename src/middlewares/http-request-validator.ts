@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { AnyZodObject, ZodError } from "zod";
 
-import { HTTP_STATUS } from "@/config/common";
+import { HTTP_STATUS } from "@/constants/common";
 import { ApiErrorResponse } from "@/utils/api-error-response";
 
 type ValidationErrors = { [x in string]: string };

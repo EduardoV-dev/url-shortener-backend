@@ -10,6 +10,7 @@ dotenv.config({
 export const ENVS = Object.freeze({
   CORS_ORIGINS: process.env.CORS_ORIGINS || "",
   DATABASE_URL: process.env.DATABASE_URL || "",
+  LOG_LEVEL: process.env.LOG_LEVEL || "info",
   NODE_ENV: process.env.NODE_ENV || "development",
   PORT: Number(process.env.PORT) || 3000,
 });

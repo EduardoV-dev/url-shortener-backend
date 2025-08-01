@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { HttpRequestValidator } from "../http-request-validator";
 
-jest.mock("@/config/common", () => ({
+jest.mock("@/constants/common", () => ({
   HTTP_STATUS: { BAD_REQUEST: 400 },
 }));
 
