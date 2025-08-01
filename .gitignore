@@ -9,3 +9,6 @@ coverage/
 # Prisma
 prisma/migrations
 src/generated
+
+# Logs
+logs/
