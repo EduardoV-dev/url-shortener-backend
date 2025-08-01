@@ -5,6 +5,7 @@ export class HttpError extends Error {
     public details?: unknown,
   ) {
     super(message);
+    this.name = "HttpError";
     Error.captureStackTrace(this, this.constructor);
   }
 }

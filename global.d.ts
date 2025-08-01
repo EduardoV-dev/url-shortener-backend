@@ -5,11 +5,10 @@ import { ParamsDictionary } from "express-serve-static-core";
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
-      CORS_ORIGINS: string;
-      DATABASE_URL: string;
-      NODE_ENV: "development" | "production" | "test";
-      PORT: string;
-      SWAGGER_API_SERVERS: string;
+      CORS_ORIGINS: string | undefined;
+      DATABASE_URL: string | undefined;
+      NODE_ENV: "development" | "production" | "test" | undefined;
+      PORT: string | undefined;
     }
   }
   type ControllerMethod<

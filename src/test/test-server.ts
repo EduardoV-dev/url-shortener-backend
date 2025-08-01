@@ -10,4 +10,6 @@ export function createTestServer(router: express.Router) {
   return supertest(app);
 }
 
+export type TestServer = ReturnType<typeof createTestServer>;
+
 export type { Request, Response } from "supertest";

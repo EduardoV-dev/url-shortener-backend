@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc && tsc-alias",
-    "dev": "env-cmd -f .env.local nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "dev": "env-cmd -f .env.local nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/app.ts",
     "format": "prettier --write **/*.{js,mjs,ts,mts,json,yaml}",
     "format:check": "prettier --check **/*.{js,mjs,ts,mts,json,yaml}",
     "lint": "eslint **/*.{js,mjs,ts,mts} --fix",
@@ -18,7 +18,7 @@
     "prisma:generate:dev": "env-cmd -f .env.local prisma generate",
     "prisma:migrate:dev": "env-cmd -f .env.local prisma migrate dev --name init",
     "prisma:drop:dev": "env-cmd -f .env.local prisma migrate reset",
-    "start": "node dist/src/server.js",
+    "start": "node dist/src/app.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:watch": "jest --watch"

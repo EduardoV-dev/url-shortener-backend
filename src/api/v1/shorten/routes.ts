@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { validateRequest } from "@/middlewares/http-request-validator";
+import { HttpRequestValidator } from "@/middlewares/http-request-validator";
 
 import { UrlShortenerController } from "./controller";
 import { UrlShortenerRepository } from "./repository";
@@ -15,6 +15,6 @@ const controller = new UrlShortenerController(service);
 
 const router = Router();
 
-router.post("", validateRequest(urlSchema), controller.createUrl);
+router.post("", new HttpRequestValidator(urlSchema).validate, controller.createUrl);
 
 export default router;
