@@ -5,7 +5,7 @@ import { HttpRequestValidator } from "@/middlewares/http-request-validator";
 import { UrlShortenerController } from "./controller";
 import { UrlShortenerRepository } from "./repository";
 import { UrlShortenerService } from "./service";
-import { ShortCodeGenerator } from "./utils";
+import { ShortCodeGenerator } from "./short-code-generator";
 import { urlSchema } from "./validations";
 
 const repo = new UrlShortenerRepository();

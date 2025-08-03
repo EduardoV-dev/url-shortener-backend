@@ -1,7 +1,15 @@
 import type { Config } from "jest";
 
 export default {
-  coveragePathIgnorePatterns: ["/node_modules/", "/src/tests/", "/src/__tests__/"],
+  coveragePathIgnorePatterns: ["/node_modules/", "/src/test/", "/src/generated"],
+  coverageThreshold: {
+    global: {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+  },
   moduleFileExtensions: ["ts", "js", "json"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",

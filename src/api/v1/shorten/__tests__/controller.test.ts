@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 
 import { HTTP_STATUS } from "@/constants/common";
+import { ApiError } from "@/utils/api-error";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
-import { HttpError } from "@/utils/http-error";
 
 import { UrlShortenerController } from "../controller";
 import { Service } from "../service";
@@ -48,7 +48,9 @@ describe("UrlShortenerController", () => {
 
     it("should return 500 and error message on failure", async () => {
       const req = { body: { url: "https://example.com" } } as Request;
-      mockService.createShortUrl.mockRejectedValue(new HttpError("Could not create url", 500));
+      mockService.createShortUrl.mockRejectedValue(
+        new ApiError("Could not create url", { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }),
+      );
 
       await controller.createUrl(req, res);
 

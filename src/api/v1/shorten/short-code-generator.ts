@@ -2,6 +2,9 @@ export interface CodeGenerator {
   generateByRange: (min: number, max: number) => Promise<string>;
 }
 
+export const MIN_CODE_LENGTH = 6;
+export const MAX_CODE_LENGTH = 10;
+
 export class ShortCodeGenerator implements CodeGenerator {
   private generateIntByRange = (min: number, max: number) => {
     if (min > max) throw new Error("Minimum value cannot be greater than maximum value.");

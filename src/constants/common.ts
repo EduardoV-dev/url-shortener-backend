@@ -5,6 +5,7 @@ export const API_VERSIONS = Object.freeze({
 export const MORGAN_SETTING = "tiny";
 
 export const PRISMA_CODES = Object.freeze({
+  UNIQUE_CONSTRAINT_FAILED: "P2002",
   RECORD_NOT_FOUND: "P2025",
 });
 

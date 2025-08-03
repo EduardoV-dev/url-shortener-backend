@@ -1,7 +1,9 @@
 import { HTTP_STATUS } from "@/constants/common";
+import { Url } from "@/generated/prisma";
+import { ApiError } from "@/utils/api-error";
 import { ApiErrorResponse } from "@/utils/api-error-response";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
-import { HttpError } from "@/utils/http-error";
+import { retry } from "@/utils/common";
 import { logger } from "@/utils/logger";
 
 import { Service } from "./service";
@@ -16,18 +18,18 @@ export class UrlShortenerController implements Controller {
   public createUrl: Controller["createUrl"] = async (req, res) => {
     try {
       const { url: urlString } = req.body;
-      const url = await this.service.createShortUrl(urlString);
+      const url: Url = await retry(() => this.service.createShortUrl(urlString), {
+        onRetry: (error, attempt) =>
+          logger.warn(`UrlShortenerController.createUrl | Attempt ${attempt} failed:`, error),
+      });
 
       res
         .status(HTTP_STATUS.CREATED)
         .json(new ApiSuccessResponse("Short url created successfully!", url).toJSON());
     } catch (err) {
-      const error = err as HttpError;
-      logger.error("[Controller] createUrl", error);
-
-      res
-        .status(error.statusCode)
-        .json(new ApiErrorResponse("Failed to create short URL", error).toJSON());
+      const error = err as ApiError;
+      logger.error("UrlShortenerController | createUrl", error);
+      res.status(error.status).json(new ApiErrorResponse(error.message).toJSON());
     }
   };
 }

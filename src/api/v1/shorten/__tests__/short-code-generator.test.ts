@@ -1,4 +1,4 @@
-import { ShortCodeGenerator } from "../utils";
+import { ShortCodeGenerator } from "../short-code-generator";
 
 // Mock nanoid
 jest.mock("nanoid", () => ({

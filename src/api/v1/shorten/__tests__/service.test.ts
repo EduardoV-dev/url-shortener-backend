@@ -1,10 +1,10 @@
 import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
-import { HttpError } from "@/utils/http-error";
+import { ApiError } from "@/utils/api-error";
 
 import { Repository } from "../repository";
 import { UrlShortenerService } from "../service";
-import { CodeGenerator } from "../utils";
+import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
 import { MOCK_URL } from "./mocks";
 
 describe("UrlShortenerService", () => {
@@ -38,7 +38,10 @@ describe("UrlShortenerService", () => {
       const response = await service.createShortUrl(paramUrl);
 
       expect(mockCodeGenerator.generateByRange).toHaveBeenCalledTimes(1);
-      expect(mockCodeGenerator.generateByRange).toHaveBeenCalledWith(6, 10); // Internally, the code generator use 6 - 10 range
+      expect(mockCodeGenerator.generateByRange).toHaveBeenCalledWith(
+        MIN_CODE_LENGTH,
+        MAX_CODE_LENGTH,
+      );
 
       expect(mockRepository.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.create).toHaveBeenCalledWith({
@@ -50,15 +53,14 @@ describe("UrlShortenerService", () => {
     });
 
     it("Should throw error when url could not be created", async () => {
-      mockRepository.create.mockRejectedValue(new HttpError("Database error", 500));
+      mockRepository.create.mockRejectedValue(
+        new ApiError("Database error", { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }),
+      );
 
       const response = service.createShortUrl(paramUrl);
 
-      await expect(response).rejects.toThrow(HttpError);
-      await expect(response).rejects.toHaveProperty(
-        "statusCode",
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      );
+      await expect(response).rejects.toThrow(ApiError);
+      await expect(response).rejects.toHaveProperty("status", HTTP_STATUS.INTERNAL_SERVER_ERROR);
     });
   });
 });

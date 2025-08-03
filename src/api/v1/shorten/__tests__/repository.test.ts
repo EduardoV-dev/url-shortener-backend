@@ -1,7 +1,8 @@
-import { HTTP_STATUS } from "@/constants/common";
+import { PRISMA_CODES } from "@/constants/common";
+import { Prisma } from "@/generated/prisma";
 import { prismaMock } from "@/test/prisma-mock";
 
-import { UrlCreateParams, UrlShortenerRepository } from "../repository";
+import { ERROR_CODES, UrlCreateParams, UrlShortenerRepository } from "../repository";
 import { MOCK_URL } from "./mocks";
 
 describe("UrlShortenerRepository", () => {
@@ -28,13 +29,29 @@ describe("UrlShortenerRepository", () => {
       expect(response).toEqual(MOCK_URL);
     });
 
-    it("Should throw an error if url could not be created", async () => {
+    it("Should throw an error if shortId already exists", async () => {
+      prismaMock.url.create.mockRejectedValue(
+        new Prisma.PrismaClientKnownRequestError("", {
+          code: PRISMA_CODES.UNIQUE_CONSTRAINT_FAILED,
+          clientVersion: "",
+        }),
+      );
+
+      await expect(repo.create(createParams)).rejects.toHaveProperty(
+        "code",
+        ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS,
+      );
+
+      expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
+    });
+
+    it("Should throw an Internal Server Error if url could not be created", async () => {
       prismaMock.url.create.mockRejectedValue(new Error("Database error"));
 
       const response = repo.create(createParams);
       await expect(response).rejects.toHaveProperty(
-        "statusCode",
-        HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        "code",
+        ERROR_CODES.CREATE.INTERNAL_SERVER_ERROR,
       );
       expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
     });

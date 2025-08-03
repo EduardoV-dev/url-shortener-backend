@@ -1,7 +1,7 @@
 import { Url } from "@/generated/prisma";
 
 import { Repository } from "./repository";
-import { CodeGenerator } from "./utils";
+import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "./short-code-generator";
 
 /**
  * Service interface for URL shortener business logic.
@@ -30,8 +30,11 @@ export class UrlShortenerService implements Service {
   ) {}
 
   public createShortUrl: Service["createShortUrl"] = async (url) => {
-    // TODO: For this service, check if there is a short url with the same short id, in case there is, generate a new one.
-    const shortId: string = await this.codeGenerator.generateByRange(6, 10);
-    return this.repository.create({ shortId, longUrl: url });
+    const shortId: string = await this.codeGenerator.generateByRange(
+      MIN_CODE_LENGTH,
+      MAX_CODE_LENGTH,
+    );
+
+    return await this.repository.create({ shortId, longUrl: url });
   };
 }

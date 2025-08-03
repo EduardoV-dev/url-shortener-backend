@@ -1,7 +1,15 @@
-import { HTTP_STATUS } from "@/constants/common";
-import { Url } from "@/generated/prisma";
+import { PRISMA_CODES } from "@/constants/common";
+import { Prisma, Url } from "@/generated/prisma";
 import { prisma } from "@/storage/prisma";
-import { HttpError } from "@/utils/http-error";
+import { ApiError } from "@/utils/api-error";
+import { logger } from "@/utils/logger";
+
+export const ERROR_CODES = {
+  CREATE: {
+    INTERNAL_SERVER_ERROR: "CREATE.INTERNAL_SERVER_ERROR",
+    SHORT_ID_ALREADY_EXISTS: "CREATE.SHORT_ID_ALREADY_EXISTS",
+  },
+};
 
 /**
  * Parameters required to create a new shortened URL.
@@ -29,7 +37,25 @@ export class UrlShortenerRepository implements Repository {
     try {
       return await prisma.url.create({ data });
     } catch (err) {
-      throw new HttpError("Error creating url", HTTP_STATUS.INTERNAL_SERVER_ERROR, err);
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === PRISMA_CODES.UNIQUE_CONSTRAINT_FAILED
+      ) {
+        logger.error(
+          "UrlShortenerRepository | create",
+          "Short ID already exists, please try again with a different ID.",
+          err,
+        );
+
+        throw new ApiError("Short ID already exists", {
+          code: ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS,
+        });
+      }
+
+      logger.error("UrlShortenerRepository | create", err);
+      throw new ApiError("Error creating url", {
+        code: ERROR_CODES.CREATE.INTERNAL_SERVER_ERROR,
+      });
     }
   };
 }
