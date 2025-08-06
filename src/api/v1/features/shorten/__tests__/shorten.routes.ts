@@ -1,6 +1,6 @@
 import { createTestServer, type Request, type Response } from "@/test/test-server";
 
-import routes from "../routes";
+import routes from "../shorten.routes";
 
 const request = createTestServer(routes);
 
@@ -12,7 +12,7 @@ describe("/shorten", () => {
       req = request.post("");
     });
 
-    it("Should return 201 is created succesfully", async () => {
+    it("Should return 201 if created succesfully", async () => {
       const response = await req.send({ url: "https://github.com/this-was-done-by-supertest" });
 
       expect(response.statusCode).toBe(201);

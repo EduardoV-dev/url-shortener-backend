@@ -3,25 +3,21 @@ import { Url } from "@/generated/prisma";
 import { ApiError } from "@/utils/api-error";
 import { ApiErrorResponse } from "@/utils/api-error-response";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
-import { retry } from "@/utils/common";
 import { logger } from "@/utils/logger";
 
-import { Service } from "./service";
+import { ShortenService } from "./shorten.service";
 
-interface Controller {
-  createUrl: ControllerMethod<unknown, { url: string }>;
+interface ShortenController {
+  createUrl: ControllerMethod<{ url: string }>;
 }
 
-export class UrlShortenerController implements Controller {
-  constructor(private service: Service) {}
+export class ShortenControllerImpl implements ShortenController {
+  constructor(private service: ShortenService) {}
 
-  public createUrl: Controller["createUrl"] = async (req, res) => {
+  public createUrl: ShortenController["createUrl"] = async (req, res) => {
     try {
       const { url: urlString } = req.body;
-      const url: Url = await retry(() => this.service.createShortUrl(urlString), {
-        onRetry: (error, attempt) =>
-          logger.warn(`UrlShortenerController.createUrl | Attempt ${attempt} failed:`, error),
-      });
+      const url: Url = await this.service.createShortUrl(urlString);
 
       res
         .status(HTTP_STATUS.CREATED)

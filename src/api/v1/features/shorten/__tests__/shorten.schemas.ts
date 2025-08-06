@@ -1,6 +1,6 @@
 import { ZodError } from "zod";
 
-import { urlSchema } from "../validations";
+import { urlSchema } from "../shorten.schemas";
 
 describe("urlSchema", () => {
   it("should pass with a valid URL", () => {

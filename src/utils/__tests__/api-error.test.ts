@@ -3,52 +3,46 @@ import { HTTP_STATUS } from "@/constants/common";
 import { ApiError, DEFAULT_ERROR_CODE } from "../api-error";
 
 describe("ApiError", () => {
-  it("Set default values", () => {
-    const err = new ApiError("An error occurred");
-    expect(err.toJSON()).toEqual({
-      code: DEFAULT_ERROR_CODE,
-      details: null,
-      message: "An error occurred",
-      name: "ApiError",
-      status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      timestamp: expect.any(String),
-    });
-  });
-
-  it("Sets code correctly and defaults the rest", () => {
-    const err = new ApiError("An error occurred", { code: "CUSTOM_ERROR" });
-    expect(err.code).toBe("CUSTOM_ERROR");
-    expect(err.toJSON()).toEqual({
-      code: "CUSTOM_ERROR",
-      details: null,
-      message: "An error occurred",
-      name: "ApiError",
-      status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
-      timestamp: expect.any(String),
-    });
-  });
-
-  it("Sets all error metadata", () => {
-    const err = new ApiError("An error occurred", {
-      code: "CUSTOM_ERROR",
-      status: HTTP_STATUS.BAD_REQUEST,
-      details: { info: "Additional details" },
-    });
-
-    expect(err.toJSON()).toEqual({
-      code: "CUSTOM_ERROR",
-      details: { info: "Additional details" },
-      message: "An error occurred",
-      name: "ApiError",
-      status: HTTP_STATUS.BAD_REQUEST,
-      timestamp: expect.any(String),
-    });
-  });
-
-  it("Captures stack trace", () => {
-    const err = new ApiError("Error");
-    expect(typeof err.stack).toBe("string");
-    expect(err.stack).toContain("Error: Error");
+  it("should set name, message, default code, status, and timestamp", () => {
+    const err = new ApiError("fail");
     expect(err.name).toBe("ApiError");
+    expect(err.message).toBe("fail");
+    expect(err.code).toBe(DEFAULT_ERROR_CODE);
+    expect(err.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+    expect(new Date(err.timestamp)).toBeInstanceOf(Date);
+  });
+
+  it("should set details and be chainable", () => {
+    const err = new ApiError("fail").setDetails({ foo: "bar" });
+    expect(err.details).toEqual({ foo: "bar" });
+    expect(err).toBeInstanceOf(ApiError);
+  });
+
+  it("should set status and be chainable", () => {
+    const err = new ApiError("fail").setStatus(404);
+    expect(err.status).toBe(404);
+    expect(err).toBeInstanceOf(ApiError);
+  });
+
+  it("should set code and be chainable", () => {
+    const err = new ApiError("fail").setCode("CUSTOM");
+    expect(err.code).toBe("CUSTOM");
+    expect(err).toBeInstanceOf(ApiError);
+  });
+
+  it("should serialize to correct JSON structure", () => {
+    const err = new ApiError("fail")
+      .setDetails({ foo: "bar" })
+      .setStatus(400)
+      .setCode("BAD_REQUEST");
+
+    expect(err.toJSON()).toEqual({
+      code: "BAD_REQUEST",
+      details: { foo: "bar" },
+      message: "fail",
+      name: "ApiError",
+      status: 400,
+      timestamp: expect.any(String),
+    });
   });
 });

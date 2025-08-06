@@ -13,12 +13,11 @@ declare global {
     }
   }
   type ControllerMethod<
-    Params = ParamsDictionary,
     ReqBody = any,
     ReqQuery = any,
     Locals extends Record<string, any> = Record<string, any>,
   > = (
-    req: Request<Params, APIResponse, ReqBody, ReqQuery, Locals>,
+    req: Request<ParamsDictionary, APIResponse, ReqBody, ReqQuery, Locals>,
     res: Response<APIResponse, Locals>,
   ) => Promise<void>;
 

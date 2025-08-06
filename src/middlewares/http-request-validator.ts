@@ -1,8 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import { AnyZodObject, ZodError } from "zod";
+import { ZodError, ZodTypeAny } from "zod";
 
 import { HTTP_STATUS } from "@/constants/common";
 import { ApiErrorResponse } from "@/utils/api-error-response";
+import { logger } from "@/utils/logger";
 
 type ValidationErrors = { [x in string]: string };
 
@@ -25,7 +26,7 @@ type ValidationErrors = { [x in string]: string };
  * app.post("/endpoint", new HttpRequestValidator(schema).validate, (req, res) => {
  */
 export class HttpRequestValidator {
-  constructor(private schema: AnyZodObject) {}
+  constructor(private schema: ZodTypeAny) {}
 
   /**
    * Validates the request body against the Zod schema.
@@ -42,11 +43,12 @@ export class HttpRequestValidator {
       this.schema.parse(req.body);
       next();
     } catch (err) {
+      const errors = this.groupErrors(err as ZodError);
+      logger.error(`Validation failed for [${req.method}]: ${req.originalUrl}`, errors);
+
       res
         .status(HTTP_STATUS.BAD_REQUEST)
-        .json(
-          new ApiErrorResponse("Validation failed", this.groupErrors(err as ZodError)).toJSON(),
-        );
+        .json(new ApiErrorResponse("Validation failed", errors).toJSON());
     }
   };
 

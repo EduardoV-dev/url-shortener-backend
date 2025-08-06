@@ -4,21 +4,20 @@ import { HTTP_STATUS } from "@/constants/common";
 import { ApiError } from "@/utils/api-error";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
-import { UrlShortenerController } from "../controller";
-import { Service } from "../service";
+import { ShortenControllerImpl } from "../shorten.controller";
+import { ShortenService } from "../shorten.service";
 import { MOCK_URL } from "./mocks";
 
 describe("UrlShortenerController", () => {
-  let controller: UrlShortenerController;
-  let mockService: jest.Mocked<Service>;
+  let controller: ShortenControllerImpl;
+  let mockService: jest.Mocked<ShortenService>;
   let res: jest.Mocked<Response>;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
     mockService = { createShortUrl: jest.fn() };
-
-    controller = new UrlShortenerController(mockService);
+    controller = new ShortenControllerImpl(mockService);
 
     res = {
       status: jest.fn().mockReturnThis(),
@@ -46,10 +45,25 @@ describe("UrlShortenerController", () => {
       );
     });
 
+    it("Should return 409 if shortId is already taken", async () => {
+      const req = { body: { url: "https://example.com" } } as Request;
+      mockService.createShortUrl.mockRejectedValue(
+        new ApiError("Short ID already taken").setStatus(HTTP_STATUS.CONFLICT),
+      );
+
+      await controller.createUrl(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.CONFLICT);
+      expect(res.json).toHaveBeenCalledTimes(1);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, message: "Short ID already taken" }),
+      );
+    });
+
     it("should return 500 and error message on failure", async () => {
       const req = { body: { url: "https://example.com" } } as Request;
       mockService.createShortUrl.mockRejectedValue(
-        new ApiError("Could not create url", { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }),
+        new ApiError("Could not create url").setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR),
       );
 
       await controller.createUrl(req, res);

@@ -2,14 +2,14 @@ import { PRISMA_CODES } from "@/constants/common";
 import { Prisma } from "@/generated/prisma";
 import { prismaMock } from "@/test/prisma-mock";
 
-import { ERROR_CODES, UrlCreateParams, UrlShortenerRepository } from "../repository";
+import { SHORTEN_ERROR_CODES, ShortenRepositoryImpl, UrlCreateParams } from "../shorten.repository";
 import { MOCK_URL } from "./mocks";
 
 describe("UrlShortenerRepository", () => {
-  let repo: UrlShortenerRepository;
+  let repo: ShortenRepositoryImpl;
 
   beforeEach(() => {
-    repo = new UrlShortenerRepository();
+    repo = new ShortenRepositoryImpl();
   });
 
   describe("create", () => {
@@ -39,7 +39,7 @@ describe("UrlShortenerRepository", () => {
 
       await expect(repo.create(createParams)).rejects.toHaveProperty(
         "code",
-        ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS,
+        SHORTEN_ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS,
       );
 
       expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
@@ -51,7 +51,7 @@ describe("UrlShortenerRepository", () => {
       const response = repo.create(createParams);
       await expect(response).rejects.toHaveProperty(
         "code",
-        ERROR_CODES.CREATE.INTERNAL_SERVER_ERROR,
+        SHORTEN_ERROR_CODES.CREATE.INTERNAL_SERVER_ERROR,
       );
       expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
     });
