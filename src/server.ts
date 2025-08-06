@@ -27,7 +27,21 @@ export function createServer(): express.Express {
   // Health check route
 
   app.get("/health", (_, res: Response<APIResponse>) => {
-    res.status(HTTP_STATUS.OK).json(new ApiSuccessResponse("Server is healthy").toJSON());
+    const SECONDS_TO_MINUTES = 60;
+    const SECONDS_TO_HOURS = 3600;
+    const SECONDS_TO_DAYS = 86400;
+
+    const uptime = {
+      real: process.uptime(),
+      seconds: Math.floor(process.uptime()),
+      minutes: Math.floor(process.uptime() / SECONDS_TO_MINUTES),
+      hours: Math.floor(process.uptime() / SECONDS_TO_HOURS),
+      days: Math.floor(process.uptime() / SECONDS_TO_DAYS),
+    };
+
+    res
+      .status(HTTP_STATUS.OK)
+      .json(new ApiSuccessResponse("Server is healthy", { uptime }).toJSON());
   });
 
   // Not found route

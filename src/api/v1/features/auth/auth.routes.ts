@@ -13,7 +13,7 @@ const userService = new UserServiceImpl(userRepository);
 const authController = new AuthControllerImpl(userService);
 
 router.post(
-  "/signup",
+  "/register",
   new HttpRequestValidator(authCreationSchema).validate,
   authController.signup,
 );

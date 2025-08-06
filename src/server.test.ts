@@ -40,7 +40,7 @@ describe("App Server", () => {
 
       expect(response.status).toBe(HTTP_STATUS.OK);
       expect(response.body).toHaveProperty("success", true);
-      expect(response.body).toHaveProperty("data", null);
+      expect(response.body).toHaveProperty("data.uptime");
       expect(response.body).toHaveProperty("error", null);
       expect(response.body).toHaveProperty("message");
     });

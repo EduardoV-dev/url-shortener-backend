@@ -12,6 +12,60 @@ servers:
     description: "Localhost"
 
 paths:
+  /auth/register:
+    post:
+      tags:
+        - auth
+      summary: "Register a new user"
+      operationId: "registerUser"
+      requestBody:
+        description: "User registration details"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: "Email address of the user"
+                password:
+                  type: string
+                  description: "Password for the user account, should be hashed"
+                repeatPassword:
+                  type: string
+                  description: "Password confirmation, should match the password"
+        required: true
+      responses:
+        201:
+          description: "User registered successfully"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiSuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/User"
+        400:
+          description: "Bad Request - Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        409:
+          description: "Conflict - Email already exists"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
   /shorten:
     post:
       tags:
