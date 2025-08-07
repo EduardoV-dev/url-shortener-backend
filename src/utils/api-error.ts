@@ -1,11 +1,8 @@
 import { HTTP_STATUS } from "@/constants/common";
 
-export const DEFAULT_ERROR_CODE = "API_ERROR";
-
 export class ApiError extends Error {
   public details: unknown = null;
   public status: number = HTTP_STATUS.INTERNAL_SERVER_ERROR;
-  public code: string = DEFAULT_ERROR_CODE;
   public timestamp: Date = new Date();
 
   constructor(message: string) {
@@ -26,14 +23,8 @@ export class ApiError extends Error {
     return this;
   }
 
-  public setCode(code: string): this {
-    this.code = code;
-    return this;
-  }
-
   public toJSON() {
     return {
-      code: this.code,
       details: this.details,
       message: this.message,
       name: this.name,

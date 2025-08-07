@@ -5,7 +5,9 @@ export const API_VERSIONS = Object.freeze({
 export const MORGAN_SETTING = "tiny";
 
 export const PRISMA_CODES = Object.freeze({
+  VALUE_TOO_LONG: "P2000",
   UNIQUE_CONSTRAINT_FAILED: "P2002",
+  FOREIGN_KEY_CONSTRAINT_FAILED: "P2003",
   RECORD_NOT_FOUND: "P2025",
 });
 

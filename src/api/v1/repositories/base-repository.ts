@@ -3,6 +3,13 @@ import { PrismaClient } from "@/generated/prisma";
 import { prisma } from "@/storage/prisma";
 
 /**
+ * Type representing the name of a Prisma model.
+ * This is used to ensure type safety when accessing Prisma models.
+ * It is a key of the PrismaClient, which contains all the models defined in the Prisma schema.
+ */
+export type ModelName = keyof PrismaClient;
+
+/**
  * Type representing a partial object of type T, used for filtering and selection.
  */
 export type Where<T> = Partial<T>;
@@ -20,7 +27,7 @@ export abstract class BaseRepositoryImpl {
   /**
    * @param modelName - The name of the Prisma model.
    */
-  constructor(protected modelName: keyof PrismaClient) {}
+  constructor(protected readonly modelName: ModelName) {}
 
   /**
    * Gets the Prisma model delegate for the specified model name.

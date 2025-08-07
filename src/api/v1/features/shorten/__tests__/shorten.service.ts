@@ -1,23 +1,23 @@
+import { MockRepository } from "@/api/v1/repositories";
+import { MOCK_PRISMA_ERRORS, MOCK_REPOSITORY, MOCK_URL } from "@/api/v1/test/mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { ApiError } from "@/utils/api-error";
 import { Retry, RetryImpl } from "@/utils/retry";
 
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
-import { SHORTEN_ERROR_CODES, ShortenRepositoryImpl } from "../shorten.repository";
 import { ShortenServiceImpl } from "../shorten.service";
-import { MOCK_URL } from "./mocks";
 
 describe("UrlShortenerService", () => {
   let service: ShortenServiceImpl;
-  let mockRepository: jest.Mocked<ShortenRepositoryImpl>;
+  let mockRepository: MockRepository;
   let mockCodeGenerator: jest.Mocked<CodeGenerator>;
   let mockRetry: Retry;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockRepository = { create: jest.fn() };
+    mockRepository = MOCK_REPOSITORY;
     mockCodeGenerator = { generateByRange: jest.fn() };
     mockRetry = new RetryImpl().setDelayMs(0);
 
@@ -32,10 +32,6 @@ describe("UrlShortenerService", () => {
     const paramUrl = "https://github.com/EduardoV-dev";
     const mockGeneratedCode = "my-code";
 
-    const shortIdAlreadyExistsError = new ApiError("Short ID already exists").setCode(
-      SHORTEN_ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS,
-    );
-
     it("Should generate a short code and create an URL using the repository", async () => {
       const mockCreatedUrl: Url = {
         ...MOCK_URL,
@@ -44,7 +40,7 @@ describe("UrlShortenerService", () => {
       };
 
       mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
-      mockRepository.create.mockResolvedValue(mockCreatedUrl);
+      mockRepository.write.create.mockResolvedValue(mockCreatedUrl);
 
       const response = await service.createShortUrl(paramUrl);
 
@@ -54,8 +50,8 @@ describe("UrlShortenerService", () => {
         MAX_CODE_LENGTH,
       );
 
-      expect(mockRepository.create).toHaveBeenCalledTimes(1);
-      expect(mockRepository.create).toHaveBeenCalledWith({
+      expect(mockRepository.write.create).toHaveBeenCalledTimes(1);
+      expect(mockRepository.write.create).toHaveBeenCalledWith({
         shortId: mockGeneratedCode,
         longUrl: paramUrl,
       });
@@ -64,7 +60,7 @@ describe("UrlShortenerService", () => {
     });
 
     it("Should throw error if short id is being used and retries do not work", async () => {
-      mockRepository.create.mockRejectedValue(shortIdAlreadyExistsError);
+      mockRepository.write.create.mockRejectedValue(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED);
 
       const response = service.createShortUrl(paramUrl);
 
@@ -73,9 +69,7 @@ describe("UrlShortenerService", () => {
     });
 
     it("Should throw error when url could not be created", async () => {
-      mockRepository.create.mockRejectedValue(
-        new ApiError("Database error").setCode(SHORTEN_ERROR_CODES.CREATE.INTERNAL_SERVER_ERROR),
-      );
+      mockRepository.write.create.mockRejectedValue(new Error("Database error"));
 
       const response = service.createShortUrl(paramUrl);
 
@@ -92,17 +86,13 @@ describe("UrlShortenerService", () => {
 
       mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
 
-      mockRepository.create
-        .mockRejectedValueOnce(
-          new ApiError("Short ID already exists").setCode(
-            SHORTEN_ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS,
-          ),
-        )
+      mockRepository.write.create
+        .mockRejectedValueOnce(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED)
         .mockResolvedValueOnce(mockCreatedUrl);
 
       const response = await service.createShortUrl(paramUrl);
 
-      expect(mockRepository.create).toHaveBeenCalledTimes(2);
+      expect(mockRepository.write.create).toHaveBeenCalledTimes(2);
       expect(response).toEqual(mockCreatedUrl);
     });
   });

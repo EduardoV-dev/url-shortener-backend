@@ -1,15 +1,6 @@
 import { Url } from "@/generated/prisma";
-import { prisma } from "@/storage/prisma";
-import { ApiError } from "@/utils/api-error";
 
-import { PrismaErrorChecker } from "../../utils/error-handlers";
-
-export const SHORTEN_ERROR_CODES = {
-  CREATE: {
-    INTERNAL_SERVER_ERROR: "CREATE.INTERNAL_SERVER_ERROR",
-    SHORT_ID_ALREADY_EXISTS: "CREATE.SHORT_ID_ALREADY_EXISTS",
-  },
-};
+import { ReadRepository, Repository, RepositoryImpl, WriteRepository } from "../../repositories";
 
 /**
  * Parameters required to create a new shortened URL.
@@ -17,34 +8,18 @@ export const SHORTEN_ERROR_CODES = {
 export type UrlCreateParams = Pick<Url, "shortId" | "longUrl">;
 
 /**
- * Repository interface for URL shortener operations.
+ * Interface for the ShortenRepository, which extends the Repository interface.
+ * This interface defines methods for reading and writing shortened URLs.
  */
-export interface ShortenRepository {
-  /**
-   * Creates a new shortened URL.
-   * @param params - The parameters for the new URL.
-   * @returns The created Url object.
-   */
-  create: (params: UrlCreateParams) => Promise<Url>;
-}
+export type ShortenRepository = Repository<Url>;
 
 /**
- * Implementation of the Repository interface using Prisma ORM.
- * Provides methods to create, retrieve, update, and delete shortened URLs.
+ * Implementation of the ShortenRepository interface.
+ * This class extends the Repository class to provide methods for URL shortening operations.
+ * It uses the Prisma ORM to interact with the database.
  */
-export class ShortenRepositoryImpl implements ShortenRepository {
-  public create: ShortenRepository["create"] = async (data) => {
-    try {
-      return await prisma.url.create({ data });
-    } catch (error) {
-      if (PrismaErrorChecker.checkUniqueConstraint(error))
-        throw new ApiError("Short ID already exists")
-          .setCode(SHORTEN_ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS)
-          .setDetails(error);
-
-      throw new ApiError("Error creating url")
-        .setCode(SHORTEN_ERROR_CODES.CREATE.INTERNAL_SERVER_ERROR)
-        .setDetails(error);
-    }
-  };
+export class ShortenRepositoryImpl extends RepositoryImpl<Url> {
+  constructor(read: ReadRepository<Url>, write: WriteRepository<Url>) {
+    super(read, write);
+  }
 }

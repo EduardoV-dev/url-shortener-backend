@@ -1,6 +1,4 @@
-import { PrismaClient } from "@/generated/prisma";
-
-import { BaseRepositoryImpl, Select, Where } from "./base-repository";
+import { BaseRepositoryImpl, ModelName, Select, Where } from "./base-repository";
 
 export interface ReadRepository<T> {
   /**
@@ -13,6 +11,18 @@ export interface ReadRepository<T> {
    * @returns A promise that resolves to the record or null if not found.
    */
   findOne(): Promise<T | null>;
+  /**
+   * Sets the where clause for filtering records.
+   * @param where - The criteria to filter records.
+   * @returns The current instance for method chaining.
+   */
+  setWhere(where: Where<T>): this;
+  /**
+   * Sets the select clause for selecting specific fields.
+   * @param select - The fields to select.
+   * @returns The current instance for method chaining.
+   */
+  setSelect(select: Select<T>): this;
 }
 
 type Nullable<T> = T | null;
@@ -25,7 +35,7 @@ export class ReadRepositoryImpl<T> extends BaseRepositoryImpl implements ReadRep
   protected where: Nullable<Where<T>>;
   protected select: Nullable<Select<T>>;
 
-  constructor(protected modelName: keyof PrismaClient) {
+  constructor(modelName: ModelName) {
     super(modelName);
 
     this.where = null;
@@ -86,3 +96,12 @@ export class ReadRepositoryImpl<T> extends BaseRepositoryImpl implements ReadRep
     return result;
   };
 }
+
+/**
+ * Mock type for ReadRepository interface.
+ * This type is used to create a mock implementation of the ReadRepository interface for testing purposes.
+ * It allows for mocking the methods of the ReadRepository interface using Jest.
+ */
+export type MockReadRepository = {
+  [K in keyof ReadRepository<unknown>]: jest.Mock;
+};

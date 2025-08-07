@@ -1,15 +1,10 @@
-import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
-import { ApiError } from "@/utils/api-error";
 import { logger } from "@/utils/logger";
 import { Retry } from "@/utils/retry";
 
+import { PrismaErrorHandlerImpl } from "../../utils/prisma-error-handler";
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "./short-code-generator";
-import {
-  SHORTEN_ERROR_CODES,
-  ShortenRepository,
-  ShortenRepositoryImpl,
-} from "./shorten.repository";
+import { ShortenRepository } from "./shorten.repository";
 
 /**
  * Service interface for URL shortener business logic.
@@ -28,7 +23,7 @@ export interface ShortenServiceConstructor {
   /**
    * Repository for accessing and manipulating shortened URLs.
    */
-  repository: ShortenRepositoryImpl;
+  repository: ShortenRepository;
   /**
    * Code generator for generating unique short codes.
    */
@@ -58,33 +53,25 @@ export class ShortenServiceImpl implements ShortenService {
       .setOnRetry((error, attempt) => {
         logger.warn(`UrlShortenerController.createUrl | Attempt ${attempt} failed:`, error);
       })
-      .setShouldRetry((error) => {
-        const err = error as ApiError;
-        return err.code === SHORTEN_ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS;
-      });
+      .setShouldRetry(PrismaErrorHandlerImpl.checkUniqueConstraint);
 
     try {
       return await retry.execute(async () => {
+        logger.info("Creating short URL for:", url);
+
         const shortId: string = await this.codeGenerator.generateByRange(
           MIN_CODE_LENGTH,
           MAX_CODE_LENGTH,
         );
 
-        return await this.repository.create({ shortId, longUrl: url });
+        return await this.repository.write.create({ shortId, longUrl: url });
       });
     } catch (err) {
-      const error = err as ApiError;
-      logger.error("UrlShortenerController.createUrl | All attempts failed:", error);
-
-      switch (error.code) {
-        case SHORTEN_ERROR_CODES.CREATE.SHORT_ID_ALREADY_EXISTS:
-          error.setStatus(HTTP_STATUS.CONFLICT);
-          break;
-        default:
-          error.setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR);
-      }
-
-      throw error;
+      throw new PrismaErrorHandlerImpl(err).handleError<Url>({
+        entity: "Url",
+        uniqueField: "shortId",
+        loggerMessage: "UrlShortenerService.createShortUrl | Error creating short URL",
+      });
     }
   };
 }

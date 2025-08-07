@@ -1,36 +1,29 @@
 import { Url } from "@/generated/prisma";
 import { prismaMock } from "@/test/prisma-mock";
 
+import { MOCK_URL } from "../../test/mocks";
 import { WriteRepositoryImpl } from "../write-repository";
 
 describe("WriteRepository", () => {
   let writeRepo: WriteRepositoryImpl<Url>;
   const paramUrl = "https://example.com";
 
-  const mockUrl: Url = {
-    createdAt: new Date(),
-    id: "1",
-    longUrl: paramUrl,
-    shortId: "abc123",
-    userId: null,
-  };
-
   beforeEach(() => {
-    writeRepo = new WriteRepositoryImpl<Url>("url");
+    writeRepo = new WriteRepositoryImpl("url");
   });
 
   it("Creates a new record (Url)", async () => {
-    prismaMock.url.create.mockResolvedValue(mockUrl);
+    prismaMock.url.create.mockResolvedValue(MOCK_URL);
     const newUser = await writeRepo.create({ longUrl: paramUrl });
 
-    expect(newUser).toEqual(mockUrl);
+    expect(newUser).toEqual(MOCK_URL);
     expect(prismaMock.url.create).toHaveBeenCalledWith({ data: { longUrl: paramUrl } });
     expect(prismaMock.url.create).toHaveBeenCalledTimes(1);
   });
 
   it("Updates a new record (Url)", async () => {
     const updatedUrl = "https://updated-example.com";
-    const updatedRecord: Url = { ...mockUrl, longUrl: updatedUrl };
+    const updatedRecord = { ...MOCK_URL, longUrl: updatedUrl };
 
     prismaMock.url.update.mockResolvedValue(updatedRecord);
 
@@ -45,11 +38,11 @@ describe("WriteRepository", () => {
   });
 
   it("Deletes a record (Url)", async () => {
-    prismaMock.url.delete.mockResolvedValue(mockUrl);
+    prismaMock.url.delete.mockResolvedValue(MOCK_URL);
 
     const result = await writeRepo.delete({ id: "1" });
 
-    expect(result).toEqual(mockUrl);
+    expect(result).toEqual(MOCK_URL);
     expect(prismaMock.url.delete).toHaveBeenCalledWith({ where: { id: "1" } });
     expect(prismaMock.url.delete).toHaveBeenCalledTimes(1);
   });

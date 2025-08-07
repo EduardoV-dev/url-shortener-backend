@@ -25,7 +25,7 @@ export class ShortenControllerImpl implements ShortenController {
     } catch (err) {
       const error = err as ApiError;
       logger.error("UrlShortenerController | createUrl", error);
-      res.status(error.status).json(new ApiErrorResponse(error.message).toJSON());
+      res.status(error.status).json(new ApiErrorResponse(error.message, error).toJSON());
     }
   };
 }

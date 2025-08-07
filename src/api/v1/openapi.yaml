@@ -32,7 +32,7 @@ paths:
                 password:
                   type: string
                   description: "Password for the user account, should be hashed"
-                repeatPassword:
+                confirmPassword:
                   type: string
                   description: "Password confirmation, should match the password"
         required: true

@@ -1,34 +1,11 @@
 import { Url } from "@/generated/prisma";
 import { prismaMock } from "@/test/prisma-mock";
 
+import { MOCK_URLS } from "../../test/mocks";
 import { ReadRepositoryImpl } from "../read-repository";
 
 describe("ReadRepository", () => {
   let repo: ReadRepositoryImpl<Url>;
-
-  const mockUrls: Url[] = [
-    {
-      id: "1",
-      longUrl: "https://example.com/1",
-      createdAt: new Date(),
-      shortId: "fdsaf",
-      userId: "user1",
-    },
-    {
-      id: "2",
-      longUrl: "https://example.com/2",
-      createdAt: new Date(),
-      shortId: "sdfdsf",
-      userId: "user2",
-    },
-    {
-      id: "3",
-      longUrl: "https://example.com/3",
-      createdAt: new Date(),
-      shortId: "sdfdsfa",
-      userId: "user3",
-    },
-  ];
 
   beforeEach(() => {
     repo = new ReadRepositoryImpl<Url>("url");
@@ -46,21 +23,21 @@ describe("ReadRepository", () => {
     });
 
     it("findAll returns records when they exist", async () => {
-      prismaMock.url.findMany.mockResolvedValue(mockUrls);
+      prismaMock.url.findMany.mockResolvedValue(MOCK_URLS);
 
       const result = await repo.findAll();
-      expect(result).toEqual(mockUrls);
+      expect(result).toEqual(MOCK_URLS);
     });
 
     it("Returns records with select fields", async () => {
-      const mockUrlsWithSelect = mockUrls.map(({ id, longUrl }) => ({ id, longUrl }));
+      const mockUrlsWithSelect = MOCK_URLS.map(({ id, longUrl }) => ({ id, longUrl }));
       prismaMock.url.findMany.mockResolvedValue(mockUrlsWithSelect as Url[]);
       const result = await repo.setSelect({ id: true, longUrl: true }).findAll();
       expect(result).toEqual(mockUrlsWithSelect);
     });
 
     it("findAll returns records with where clause", async () => {
-      const mockUrlsWithWhere = mockUrls.filter((url) => url.userId === "user1");
+      const mockUrlsWithWhere = MOCK_URLS.filter((url) => url.userId === "user1");
       prismaMock.url.findMany.mockResolvedValue(mockUrlsWithWhere);
       const result = await repo.setWhere({ userId: "user1" }).findAll();
       expect(result).toEqual(mockUrlsWithWhere);
@@ -69,9 +46,9 @@ describe("ReadRepository", () => {
 
   describe("findOne", () => {
     it("Finds a single record with findOne", async () => {
-      prismaMock.url.findUnique.mockResolvedValue(mockUrls[0]);
+      prismaMock.url.findUnique.mockResolvedValue(MOCK_URLS[0]);
       const result = await repo.setWhere({ id: "1" }).findOne();
-      expect(result).toEqual(mockUrls[0]);
+      expect(result).toEqual(MOCK_URLS[0]);
       expect(prismaMock.url.findUnique).toHaveBeenCalledWith({
         where: { id: "1" },
       });

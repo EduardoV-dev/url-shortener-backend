@@ -1,13 +1,12 @@
 import { HTTP_STATUS } from "@/constants/common";
 
-import { ApiError, DEFAULT_ERROR_CODE } from "../api-error";
+import { ApiError } from "../api-error";
 
 describe("ApiError", () => {
   it("should set name, message, default code, status, and timestamp", () => {
     const err = new ApiError("fail");
     expect(err.name).toBe("ApiError");
     expect(err.message).toBe("fail");
-    expect(err.code).toBe(DEFAULT_ERROR_CODE);
     expect(err.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
     expect(new Date(err.timestamp)).toBeInstanceOf(Date);
   });
@@ -24,20 +23,10 @@ describe("ApiError", () => {
     expect(err).toBeInstanceOf(ApiError);
   });
 
-  it("should set code and be chainable", () => {
-    const err = new ApiError("fail").setCode("CUSTOM");
-    expect(err.code).toBe("CUSTOM");
-    expect(err).toBeInstanceOf(ApiError);
-  });
-
   it("should serialize to correct JSON structure", () => {
-    const err = new ApiError("fail")
-      .setDetails({ foo: "bar" })
-      .setStatus(400)
-      .setCode("BAD_REQUEST");
+    const err = new ApiError("fail").setDetails({ foo: "bar" }).setStatus(400);
 
     expect(err.toJSON()).toEqual({
-      code: "BAD_REQUEST",
       details: { foo: "bar" },
       message: "fail",
       name: "ApiError",
