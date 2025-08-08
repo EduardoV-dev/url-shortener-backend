@@ -13,17 +13,19 @@ describe("ENVS", () => {
   it("should read environment variables", async () => {
     process.env.CORS_ORIGINS = "foo";
     process.env.DATABASE_URL = "bar";
+    process.env.JWT_SECRET = "another-secret";
+    process.env.LOG_LEVEL = "debug";
     process.env.NODE_ENV = "test";
     process.env.PORT = "1234";
-    process.env.LOG_LEVEL = "debug";
 
     const { ENVS } = await import("../env");
     expect(ENVS).toEqual({
       CORS_ORIGINS: "foo",
       DATABASE_URL: "bar",
+      JWT_SECRET: "another-secret",
+      LOG_LEVEL: "debug",
       NODE_ENV: "test",
       PORT: 1234,
-      LOG_LEVEL: "debug",
     });
   });
 
@@ -33,14 +35,16 @@ describe("ENVS", () => {
     process.env.NODE_ENV = undefined;
     process.env.PORT = undefined;
     process.env.LOG_LEVEL = undefined;
+    process.env.JWT_SECRET = undefined;
 
     const { ENVS } = await import("../env");
     expect(ENVS).toEqual({
       CORS_ORIGINS: "",
       DATABASE_URL: "",
+      JWT_SECRET: "secret",
+      LOG_LEVEL: "info",
       NODE_ENV: "development",
       PORT: 3000,
-      LOG_LEVEL: "info",
     });
   });
 

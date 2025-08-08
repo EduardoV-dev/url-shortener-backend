@@ -25,12 +25,14 @@ export class RepositoryImpl<T> implements Repository<T> {
   }
 }
 
+// === For testing purposes ===
+
 /**
  * MockRepository is a mock version of Repository for testing purposes.
  * It uses jest.Mock to mock the methods of ReadRepository and WriteRepository.
  * This allows for easy testing of services that depend on Repository.
  */
-export interface MockRepository {
-  read: MockReadRepository;
-  write: MockWriteRepository;
+export interface MockRepository<T> {
+  read: MockReadRepository<T>;
+  write: MockWriteRepository<T>;
 }

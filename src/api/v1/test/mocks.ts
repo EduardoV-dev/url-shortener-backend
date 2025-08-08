@@ -29,12 +29,12 @@ export const MOCK_URLS: Url[] = [
 
 export const MOCK_URL: Url = MOCK_URLS[0];
 
-const createMockRepository = (): MockRepository => ({
+export const createMockRepository = <T>(): MockRepository<T> => ({
   read: {
     findAll: jest.fn(),
     findOne: jest.fn(),
-    setSelect: jest.fn(),
-    setWhere: jest.fn(),
+    setSelect: jest.fn().mockReturnThis(),
+    setWhere: jest.fn().mockReturnThis(),
   },
   write: {
     create: jest.fn(),
@@ -42,8 +42,6 @@ const createMockRepository = (): MockRepository => ({
     update: jest.fn(),
   },
 });
-
-export const MOCK_REPOSITORY = createMockRepository();
 
 export const MOCK_PRISMA_ERRORS = Object.freeze({
   UNIQUE_CONSTRAINT_FAILED: new Prisma.PrismaClientKnownRequestError("Unique constraint failed", {

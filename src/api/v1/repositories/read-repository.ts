@@ -1,3 +1,5 @@
+import { MockInterface } from "@/test/mocks";
+
 import { BaseRepositoryImpl, ModelName, Select, Where } from "./base-repository";
 
 export interface ReadRepository<T> {
@@ -97,11 +99,11 @@ export class ReadRepositoryImpl<T> extends BaseRepositoryImpl implements ReadRep
   };
 }
 
+// === For testing purposes ===
+
 /**
  * Mock type for ReadRepository interface.
  * This type is used to create a mock implementation of the ReadRepository interface for testing purposes.
  * It allows for mocking the methods of the ReadRepository interface using Jest.
  */
-export type MockReadRepository = {
-  [K in keyof ReadRepository<unknown>]: jest.Mock;
-};
+export type MockReadRepository<T> = MockInterface<ReadRepository<T>>;

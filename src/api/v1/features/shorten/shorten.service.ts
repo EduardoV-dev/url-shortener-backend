@@ -1,4 +1,5 @@
 import { Url } from "@/generated/prisma";
+import { MockInterface } from "@/test/mocks";
 import { logger } from "@/utils/logger";
 import { Retry } from "@/utils/retry";
 
@@ -66,12 +67,21 @@ export class ShortenServiceImpl implements ShortenService {
 
         return await this.repository.write.create({ shortId, longUrl: url });
       });
-    } catch (err) {
-      throw new PrismaErrorHandlerImpl(err).handleError<Url>({
+    } catch (error) {
+      throw PrismaErrorHandlerImpl.handleError<Url>({
         entity: "Url",
-        uniqueField: "shortId",
+        error,
         loggerMessage: "UrlShortenerService.createShortUrl | Error creating short URL",
+        uniqueField: "shortId",
       });
     }
   };
 }
+
+// === For testing purposes ===
+
+export type MockShortenService = MockInterface<ShortenService>;
+
+export const MOCK_SHORTEN_SERVICE: MockShortenService = {
+  createShortUrl: jest.fn(),
+};

@@ -1,3 +1,5 @@
+import { MockInterface } from "@/test/mocks";
+
 import { BaseRepositoryImpl, ModelName, Where } from "./base-repository";
 
 export interface WriteRepository<T> {
@@ -45,6 +47,4 @@ export class WriteRepositoryImpl<T> extends BaseRepositoryImpl implements WriteR
  * It uses jest.Mock to mock the methods of WriteRepository.
  * This allows for easy testing of services that depend on WriteRepository.
  */
-export type MockWriteRepository = {
-  [K in keyof WriteRepository<unknown>]: jest.Mock;
-};
+export type MockWriteRepository<T> = MockInterface<WriteRepository<T>>;

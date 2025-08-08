@@ -4,16 +4,15 @@ import { Url } from "@/generated/prisma";
 import { HttpRequestValidator } from "@/middlewares/http-request-validator";
 import { RetryImpl } from "@/utils/retry";
 
-import { ReadRepositoryImpl, WriteRepositoryImpl } from "../../repositories";
+import { ReadRepositoryImpl, RepositoryImpl, WriteRepositoryImpl } from "../../repositories";
 import { ShortCodeGenerator } from "./short-code-generator";
 import { ShortenControllerImpl } from "./shorten.controller";
-import { ShortenRepositoryImpl } from "./shorten.repository";
 import { urlSchema } from "./shorten.schemas";
 import { ShortenServiceImpl } from "./shorten.service";
 
 const readRepository = new ReadRepositoryImpl<Url>("url");
 const writeRepository = new WriteRepositoryImpl<Url>("url");
-const repository = new ShortenRepositoryImpl(readRepository, writeRepository);
+const repository = new RepositoryImpl<Url>(readRepository, writeRepository);
 
 const codeGenerator = new ShortCodeGenerator();
 const retry = new RetryImpl();
