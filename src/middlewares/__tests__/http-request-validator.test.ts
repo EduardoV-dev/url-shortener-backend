@@ -11,7 +11,7 @@ describe("HttpRequestValidator middleware", () => {
   let next: jest.MockedFunction<NextFunction>;
   let res: Pick<Response, "status" | "json"> & { status: jest.Mock; json: jest.Mock };
   let req: Pick<Request, "body">;
-  let validator: HttpRequestValidator;
+  const schema = z.object({ foo: z.string({ required_error: "Some error" }) });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -21,15 +21,12 @@ describe("HttpRequestValidator middleware", () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn(),
     };
-    validator = new HttpRequestValidator(
-      z.object({ foo: z.string({ required_error: "Some error" }) }),
-    );
   });
 
   describe("validate method", () => {
     it("calls next() if validation passes", async () => {
       req = { body: { foo: "bar" } };
-      await validator.validate(req as Request, res as unknown as Response, next);
+      await HttpRequestValidator.validate(schema)(req as Request, res as unknown as Response, next);
 
       expect(next).toHaveBeenCalled();
       expect(res.status).not.toHaveBeenCalled();
@@ -38,7 +35,7 @@ describe("HttpRequestValidator middleware", () => {
 
     it("returns 400 and error details if validation fails", async () => {
       req = { body: {} };
-      await validator.validate(req as Request, res as unknown as Response, next);
+      await HttpRequestValidator.validate(schema)(req as Request, res as unknown as Response, next);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith(
@@ -72,7 +69,7 @@ describe("HttpRequestValidator middleware", () => {
         },
       ]);
 
-      const grouped = validator.groupErrors(errors);
+      const grouped = HttpRequestValidator.groupErrors(errors);
 
       expect(grouped).toEqual({
         foo: "Message",
@@ -87,7 +84,7 @@ describe("HttpRequestValidator middleware", () => {
         }),
       } as unknown as z.ZodError;
 
-      const grouped = validator.groupErrors(errors);
+      const grouped = HttpRequestValidator.groupErrors(errors);
       expect(grouped).toEqual({ foo: "Some error" });
     });
 
@@ -98,7 +95,7 @@ describe("HttpRequestValidator middleware", () => {
         }),
       } as unknown as z.ZodError;
 
-      const grouped = validator.groupErrors(errors);
+      const grouped = HttpRequestValidator.groupErrors(errors);
       expect(grouped).toEqual({ foo: "Some error" }); // 'bar' is skipped
     });
   });

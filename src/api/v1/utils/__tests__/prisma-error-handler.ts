@@ -29,6 +29,7 @@ describe("PrismaErrorHandlerImpl", () => {
 
   describe("handlePrismaError", () => {
     const params: PrismaHandleErrorParams<{ data: string }> = {
+      error: "",
       entity: "Example",
       uniqueField: "data",
       loggerMessage: "An error occurred while processing the request",
@@ -41,7 +42,7 @@ describe("PrismaErrorHandlerImpl", () => {
           clientVersion: "",
         });
 
-        const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+        const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
         expect(apiError.message).toBeDefined();
         expect(apiError.status).toBe(HTTP_STATUS.BAD_REQUEST);
       });
@@ -52,7 +53,7 @@ describe("PrismaErrorHandlerImpl", () => {
           clientVersion: "",
         });
 
-        const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+        const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
         expect(apiError.message).toBeDefined();
         expect(apiError.status).toBe(HTTP_STATUS.CONFLICT);
       });
@@ -66,7 +67,7 @@ describe("PrismaErrorHandlerImpl", () => {
           },
         );
 
-        const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+        const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
         expect(apiError.message).toBeDefined();
         expect(apiError.status).toBe(HTTP_STATUS.BAD_REQUEST);
       });
@@ -77,7 +78,7 @@ describe("PrismaErrorHandlerImpl", () => {
           clientVersion: "",
         });
 
-        const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+        const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
         expect(apiError.message).toBeDefined();
         expect(apiError.status).toBe(HTTP_STATUS.NOT_FOUND);
       });
@@ -88,7 +89,7 @@ describe("PrismaErrorHandlerImpl", () => {
           clientVersion: "",
         });
 
-        const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+        const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
         expect(apiError.message).toBeDefined();
         expect(apiError.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       });
@@ -99,7 +100,7 @@ describe("PrismaErrorHandlerImpl", () => {
         clientVersion: "",
       });
 
-      const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+      const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
       expect(apiError.message).toBeDefined();
       expect(apiError.status).toBe(HTTP_STATUS.BAD_REQUEST);
     });
@@ -110,21 +111,21 @@ describe("PrismaErrorHandlerImpl", () => {
         "",
       );
 
-      const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+      const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
       expect(apiError.message).toBeDefined();
       expect(apiError.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
     });
 
     it("Handles PrismaClientRustPanicError", () => {
       const prismaError = new Prisma.PrismaClientRustPanicError("Prisma engine panic", "");
-      const apiError = new PrismaErrorHandlerImpl(prismaError).handleError(params);
+      const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: prismaError });
       expect(apiError.message).toBeDefined();
       expect(apiError.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
     });
 
     it("Handles unknown error", () => {
       const unknownError = new Error("Unknown error");
-      const apiError = new PrismaErrorHandlerImpl(unknownError).handleError(params);
+      const apiError = PrismaErrorHandlerImpl.handleError({ ...params, error: unknownError });
       expect(apiError.message).toBeDefined();
       expect(apiError.status).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
     });
@@ -135,8 +136,8 @@ describe("PrismaErrorHandlerImpl", () => {
       try {
         try {
           await promise();
-        } catch (err) {
-          throw new PrismaErrorHandlerImpl(err).handleError(params);
+        } catch (error) {
+          throw PrismaErrorHandlerImpl.handleError({ ...params, error });
         }
       } catch (err) {
         const error = err as ApiError;

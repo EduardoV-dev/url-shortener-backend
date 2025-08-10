@@ -8,7 +8,7 @@ import { logger } from "@/utils/logger";
 import { ShortenService } from "./shorten.service";
 
 interface ShortenController {
-  createUrl: ControllerMethod<{ url: string }>;
+  createUrl: ControllerMethod<unknown, { url: string }>;
 }
 
 export class ShortenControllerImpl implements ShortenController {
@@ -25,7 +25,7 @@ export class ShortenControllerImpl implements ShortenController {
     } catch (err) {
       const error = err as ApiError;
       logger.error("UrlShortenerController | createUrl", error);
-      res.status(error.status).json(new ApiErrorResponse(error.message, error).toJSON());
+      res.status(error.status).json(new ApiErrorResponse(error.message).toJSON());
     }
   };
 }

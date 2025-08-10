@@ -1,23 +1,23 @@
 import { Request, Response } from "express";
 
-import { MOCK_URL } from "@/api/v1/test/mocks";
+import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
 import { ApiError } from "@/utils/api-error";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
 import { ShortenControllerImpl } from "../shorten.controller";
-import { ShortenService } from "../shorten.service";
+import { MOCK_SHORTEN_SERVICE, MockShortenService } from "./shorten.service";
 
 describe("UrlShortenerController", () => {
   let controller: ShortenControllerImpl;
-  let mockService: jest.Mocked<ShortenService>;
+  let mockService: MockShortenService;
   let res: jest.Mocked<Response>;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockService = { createShortUrl: jest.fn() };
+    mockService = MOCK_SHORTEN_SERVICE;
     controller = new ShortenControllerImpl(mockService);
     res = MOCK_RESPONSE_EXPRESS;
   });

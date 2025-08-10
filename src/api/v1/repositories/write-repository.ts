@@ -39,12 +39,3 @@ export class WriteRepositoryImpl<T> extends BaseRepositoryImpl implements WriteR
     return this.modelDelegate.delete({ where });
   };
 }
-
-/**
- * MockWriteRepository is a mock version of WriteRepository for testing purposes.
- * It uses jest.Mock to mock the methods of WriteRepository.
- * This allows for easy testing of services that depend on WriteRepository.
- */
-export type MockWriteRepository = {
-  [K in keyof WriteRepository<unknown>]: jest.Mock;
-};

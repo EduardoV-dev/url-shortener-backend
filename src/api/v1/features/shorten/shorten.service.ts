@@ -57,7 +57,7 @@ export class ShortenServiceImpl implements ShortenService {
 
     try {
       return await retry.execute(async () => {
-        logger.info("Creating short URL for:", url);
+        logger.info(`Creating short URL for: ${url}`);
 
         const shortId: string = await this.codeGenerator.generateByRange(
           MIN_CODE_LENGTH,
@@ -66,11 +66,12 @@ export class ShortenServiceImpl implements ShortenService {
 
         return await this.repository.write.create({ shortId, longUrl: url });
       });
-    } catch (err) {
-      throw new PrismaErrorHandlerImpl(err).handleError<Url>({
+    } catch (error) {
+      throw PrismaErrorHandlerImpl.handleError({
         entity: "Url",
-        uniqueField: "shortId",
+        error,
         loggerMessage: "UrlShortenerService.createShortUrl | Error creating short URL",
+        uniqueField: "shortId",
       });
     }
   };

@@ -1,5 +1,5 @@
-import { MockReadRepository, ReadRepository } from "./read-repository";
-import { MockWriteRepository, WriteRepository } from "./write-repository";
+import { ReadRepository } from "./read-repository";
+import { WriteRepository } from "./write-repository";
 
 export interface Repository<T> {
   /**
@@ -23,14 +23,4 @@ export class RepositoryImpl<T> implements Repository<T> {
     this.read = read;
     this.write = write;
   }
-}
-
-/**
- * MockRepository is a mock version of Repository for testing purposes.
- * It uses jest.Mock to mock the methods of ReadRepository and WriteRepository.
- * This allows for easy testing of services that depend on Repository.
- */
-export interface MockRepository {
-  read: MockReadRepository;
-  write: MockWriteRepository;
 }

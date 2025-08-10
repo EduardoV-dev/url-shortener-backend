@@ -23,7 +23,7 @@ const controller = new ShortenControllerImpl(service);
 
 const router = Router();
 
-router.post("", new HttpRequestValidator(urlSchema).validate, controller.createUrl);
+router.post("", HttpRequestValidator.validate(urlSchema), controller.createUrl);
 
 export default router;
 

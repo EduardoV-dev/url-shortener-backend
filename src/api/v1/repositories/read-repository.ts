@@ -96,12 +96,3 @@ export class ReadRepositoryImpl<T> extends BaseRepositoryImpl implements ReadRep
     return result;
   };
 }
-
-/**
- * Mock type for ReadRepository interface.
- * This type is used to create a mock implementation of the ReadRepository interface for testing purposes.
- * It allows for mocking the methods of the ReadRepository interface using Jest.
- */
-export type MockReadRepository = {
-  [K in keyof ReadRepository<unknown>]: jest.Mock;
-};

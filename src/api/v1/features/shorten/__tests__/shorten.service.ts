@@ -1,23 +1,24 @@
-import { MockRepository } from "@/api/v1/repositories";
-import { MOCK_PRISMA_ERRORS, MOCK_REPOSITORY, MOCK_URL } from "@/api/v1/test/mocks";
+import { MOCK_URL } from "@/api/v1/test/links.mocks";
+import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
+import { MOCK_PRISMA_ERRORS, MockInterface } from "@/test/mocks";
 import { ApiError } from "@/utils/api-error";
 import { Retry, RetryImpl } from "@/utils/retry";
 
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
-import { ShortenServiceImpl } from "../shorten.service";
+import { ShortenService, ShortenServiceImpl } from "../shorten.service";
 
 describe("UrlShortenerService", () => {
   let service: ShortenServiceImpl;
-  let mockRepository: MockRepository;
+  let mockRepository: MockRepository<Url>;
   let mockCodeGenerator: jest.Mocked<CodeGenerator>;
   let mockRetry: Retry;
 
   beforeEach(() => {
     jest.clearAllMocks();
 
-    mockRepository = MOCK_REPOSITORY;
+    mockRepository = createMockRepository<Url>();
     mockCodeGenerator = { generateByRange: jest.fn() };
     mockRetry = new RetryImpl().setDelayMs(0);
 
@@ -97,3 +98,9 @@ describe("UrlShortenerService", () => {
     });
   });
 });
+
+export type MockShortenService = MockInterface<ShortenService>;
+
+export const MOCK_SHORTEN_SERVICE: MockShortenService = {
+  createShortUrl: jest.fn(),
+};

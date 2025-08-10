@@ -2,8 +2,6 @@ import { User } from "@/generated/prisma";
 
 import { ReadRepository, Repository, RepositoryImpl, WriteRepository } from "../../repositories";
 
-export type CreateUserParams = Pick<User, "email" | "password">;
-
 export type UserRepository = Repository<User>;
 
 /**

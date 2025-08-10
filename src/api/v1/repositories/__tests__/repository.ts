@@ -1,9 +1,10 @@
-import { MOCK_REPOSITORY } from "../../test/mocks";
+import { createMockRepository } from "../../test/repositories.mocks";
 import { RepositoryImpl } from "../repository";
 
 describe("Repository", () => {
   it("should create an instance with read and write repositories", () => {
-    const repository = new RepositoryImpl(MOCK_REPOSITORY.read, MOCK_REPOSITORY.write);
+    const mockRepo = createMockRepository<unknown>();
+    const repository = new RepositoryImpl(mockRepo.read, mockRepo.write);
     expect(repository.read).toBeDefined();
     expect(repository.write).toBeDefined();
   });

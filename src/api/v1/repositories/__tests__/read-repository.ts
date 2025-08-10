@@ -1,7 +1,7 @@
 import { Url } from "@/generated/prisma";
 import { prismaMock } from "@/test/prisma-mock";
 
-import { MOCK_URLS } from "../../test/mocks";
+import { MOCK_URLS } from "../../test/links.mocks";
 import { ReadRepositoryImpl } from "../read-repository";
 
 describe("ReadRepository", () => {

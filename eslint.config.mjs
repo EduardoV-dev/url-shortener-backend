@@ -2,6 +2,7 @@ import js from "@eslint/js";
 import json from "@eslint/json";
 import { defineConfig } from "eslint/config";
 import prettierConfig from "eslint-config-prettier/flat";
+import importPlugin from "eslint-plugin-import";
 import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -9,12 +10,20 @@ import tseslint from "typescript-eslint";
 export default defineConfig([
   {
     files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
-    plugins: { js, "simple-import-sort": simpleImportSort },
+    plugins: { js, "simple-import-sort": simpleImportSort, import: importPlugin },
     extends: ["js/recommended"],
     languageOptions: { globals: globals.node },
+    settings: {
+      "import/resolver": {
+        typescript: {
+          alwaysTryTypes: true,
+        },
+      },
+    },
     rules: {
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
+      "import/no-unresolved": "error",
     },
   },
   // Spread the recommended TS configs!

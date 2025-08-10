@@ -1,0 +1,18 @@
+import { User } from "@/generated/prisma";
+import { MockInterface } from "@/test/mocks";
+
+import { UserService } from "../features/user";
+
+export const MOCK_USER: User = {
+  createdAt: new Date("2025-08-08T16:23"),
+  email: "created@gmail.com",
+  id: "1",
+  password: "hashed-password",
+};
+
+export type MockUserService = MockInterface<UserService>;
+
+export const MOCK_USER_SERVICE: MockUserService = {
+  create: jest.fn(),
+  findByEmail: jest.fn(),
+};
