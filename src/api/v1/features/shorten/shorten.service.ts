@@ -55,24 +55,15 @@ export class ShortenServiceImpl implements ShortenService {
       })
       .setShouldRetry(PrismaErrorHandlerImpl.checkUniqueConstraint);
 
-    try {
-      return await retry.execute(async () => {
-        logger.info(`Creating short URL for: ${url}`);
+    return await retry.execute(async () => {
+      logger.info(`Creating short URL for: ${url}`);
 
-        const shortId: string = await this.codeGenerator.generateByRange(
-          MIN_CODE_LENGTH,
-          MAX_CODE_LENGTH,
-        );
+      const shortId: string = await this.codeGenerator.generateByRange(
+        MIN_CODE_LENGTH,
+        MAX_CODE_LENGTH,
+      );
 
-        return await this.repository.write.create({ shortId, longUrl: url });
-      });
-    } catch (error) {
-      throw PrismaErrorHandlerImpl.handleError({
-        entity: "Url",
-        error,
-        loggerMessage: "UrlShortenerService.createShortUrl | Error creating short URL",
-        uniqueField: "shortId",
-      });
-    }
+      return await this.repository.write.create({ shortId, longUrl: url });
+    });
   };
 }

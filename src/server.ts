@@ -6,6 +6,7 @@ import express, { Response } from "express";
 import serverRouter from "./api";
 import { ENVS } from "./config/env";
 import { HTTP_STATUS } from "./constants/common";
+import { httpErrorHandlerMiddleware } from "./middlewares/http-error-handler";
 import { ApiErrorResponse } from "./utils/api-error-response";
 import { ApiSuccessResponse } from "./utils/api-success-response";
 
@@ -48,6 +49,10 @@ export function createServer(): express.Express {
   app.use((_, res: Response<APIResponse>) => {
     res.status(HTTP_STATUS.NOT_FOUND).json(new ApiErrorResponse("Route not found").toJSON());
   });
+
+  // Error handler middleware
+
+  app.use(httpErrorHandlerMiddleware);
 
   return app;
 }

@@ -3,8 +3,6 @@ import { Request, Response } from "express";
 import { MOCK_USER } from "@/api/v1/test/users.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
-import { ApiError } from "@/utils/api-error";
-import { ApiErrorResponse } from "@/utils/api-error-response";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
 import { AuthControllerImpl } from "../auth.controller";
@@ -15,6 +13,7 @@ describe("AuthController", () => {
   let service: MockAuthService;
   let controller: AuthControllerImpl;
   let res: jest.Mocked<Response>;
+  let next: jest.Mock;
 
   const authenticatedResponse: AuthResponse = {
     token: "jwt_token",
@@ -25,6 +24,7 @@ describe("AuthController", () => {
     jest.clearAllMocks();
 
     res = MOCK_RESPONSE_EXPRESS;
+    next = jest.fn();
     service = MOCK_AUTH_SERVICE;
     controller = new AuthControllerImpl(service);
   });
@@ -33,15 +33,17 @@ describe("AuthController", () => {
     const req = { body: { email: MOCK_USER.email, password: MOCK_USER.password } } as Request;
 
     it("res.status and res.json are being called once", async () => {
-      await controller.signup(req, res);
+      service.signup.mockResolvedValue(authenticatedResponse);
+      await controller.signup(req, res, next);
 
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.json).toHaveBeenCalledTimes(1);
+      expect(next).not.toHaveBeenCalled();
     });
 
     it("Creates a new user successfully", async () => {
       service.signup.mockResolvedValue(authenticatedResponse);
-      await controller.signup(req, res);
+      await controller.signup(req, res, next);
 
       const { data, success } = new ApiSuccessResponse("", {
         token: authenticatedResponse.token,
@@ -52,20 +54,14 @@ describe("AuthController", () => {
     });
 
     it("Returns error response in case something fails", async () => {
-      const errorMessage = "Failed to create user";
+      const error = new Error("Failed to create user");
+      service.signup.mockRejectedValue(error);
 
-      service.signup.mockRejectedValue(
-        new ApiError(errorMessage).setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR),
-      );
+      await controller.signup(req, res, next);
 
-      await controller.signup(req, res);
-
-      const { success, error } = new ApiErrorResponse(errorMessage).toJSON();
-
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ success, error, message: errorMessage }),
-      );
-      expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.INTERNAL_SERVER_ERROR);
+      expect(next).toHaveBeenCalledWith(error);
+      expect(res.status).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
     });
   });
 
@@ -73,7 +69,8 @@ describe("AuthController", () => {
     const req = { body: { email: MOCK_USER.email, password: MOCK_USER.password } } as Request;
 
     it("res.status and res.json are being called once", async () => {
-      await controller.signup(req, res);
+      service.login.mockResolvedValue(authenticatedResponse);
+      await controller.login(req, res, next);
 
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.json).toHaveBeenCalledTimes(1);
@@ -81,7 +78,7 @@ describe("AuthController", () => {
 
     it("Returns a success response with JWT token", async () => {
       service.login.mockResolvedValue(authenticatedResponse);
-      await controller.login(req, res);
+      await controller.login(req, res, next);
 
       const { success, data } = new ApiSuccessResponse("", {
         token: authenticatedResponse.token,
@@ -97,14 +94,14 @@ describe("AuthController", () => {
     });
 
     it("Returns error response in case something fails", async () => {
-      service.login.mockRejectedValue(
-        new ApiError("Login failed").setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR),
-      );
+      const error = new Error("Login failed");
+      service.login.mockRejectedValue(error);
 
-      await controller.login(req, res);
+      await controller.login(req, res, next);
 
-      expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.INTERNAL_SERVER_ERROR);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ success: false }));
+      expect(next).toHaveBeenCalledWith(error);
+      expect(res.status).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
     });
   });
 });

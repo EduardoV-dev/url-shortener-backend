@@ -3,7 +3,6 @@ import bcrypt from "bcrypt";
 import { User } from "@/generated/prisma";
 import { logger } from "@/utils/logger";
 
-import { PrismaErrorHandlerImpl } from "../../utils/prisma-error-handler";
 import { UserRepository } from "./user.repository";
 
 export type CreateUserParams = Pick<User, "email" | "password">;
@@ -33,32 +32,12 @@ export class UserServiceImpl implements UserService {
 
   public create: UserService["create"] = async ({ email, password }) => {
     logger.info(`Creating user with email: ${email}`);
-
-    try {
-      const hashed = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-      return await this.repository.write.create({ email, password: hashed });
-    } catch (error) {
-      throw PrismaErrorHandlerImpl.handleError({
-        entity: "User",
-        error,
-        loggerMessage: "UserShortenerService.createUser | Error creating User",
-        uniqueField: "email",
-      });
-    }
+    const hashed = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    return await this.repository.write.create({ email, password: hashed });
   };
 
   public findByEmail: UserService["findByEmail"] = async (email) => {
     logger.info("Retrieving user by email:", email);
-
-    try {
-      return await this.repository.read.setWhere({ email }).findOne();
-    } catch (error) {
-      throw PrismaErrorHandlerImpl.handleError({
-        entity: "User",
-        error,
-        loggerMessage: "UserService.getUserByEmail | Error retrieving User by email",
-        uniqueField: "email",
-      });
-    }
+    return await this.repository.read.setWhere({ email }).findOne();
   };
 }

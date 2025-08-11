@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 // eslint-disable-next-line import/no-unresolved
 import { ParamsDictionary } from "express-serve-static-core";
 
@@ -27,6 +27,7 @@ declare global {
   > = (
     req: Request<Params, APIResponse, ReqBody, ReqQuery, Locals> & AuthContext,
     res: Response<APIResponse, Locals>,
+    next: NextFunction,
   ) => Promise<void>;
 
   interface APIResponse {

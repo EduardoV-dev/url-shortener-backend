@@ -1,9 +1,8 @@
 import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
-import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { MOCK_PRISMA_ERRORS, MockInterface } from "@/test/mocks";
-import { ApiError } from "@/utils/api-error";
+import { logger } from "@/utils/logger";
 import { Retry, RetryImpl } from "@/utils/retry";
 
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
@@ -60,30 +59,14 @@ describe("UrlShortenerService", () => {
       expect(response).toEqual(mockCreatedUrl);
     });
 
-    it("Should throw error if short id is being used and retries do not work", async () => {
-      mockRepository.write.create.mockRejectedValue(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED);
-
-      const response = service.createShortUrl(paramUrl);
-
-      await expect(response).rejects.toThrow(ApiError);
-      await expect(response).rejects.toHaveProperty("status", HTTP_STATUS.CONFLICT);
-    });
-
-    it("Should throw error when url could not be created", async () => {
-      mockRepository.write.create.mockRejectedValue(new Error("Database error"));
-
-      const response = service.createShortUrl(paramUrl);
-
-      await expect(response).rejects.toThrow(ApiError);
-      await expect(response).rejects.toHaveProperty("status", HTTP_STATUS.INTERNAL_SERVER_ERROR);
-    });
-
-    it("Should retry when SHORT_ID_ALREADY_EXISTS error occurs and succeed on second attempt", async () => {
+    it("Should retry when SHORT_ID_ALREADY_EXISTS error occurs and succeed on second attempt (logs every failed attempt)", async () => {
       const mockCreatedUrl: Url = {
         ...MOCK_URL,
         shortId: mockGeneratedCode,
         longUrl: paramUrl,
       };
+
+      const ATTEMPTS = 2;
 
       mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
 
@@ -93,8 +76,9 @@ describe("UrlShortenerService", () => {
 
       const response = await service.createShortUrl(paramUrl);
 
-      expect(mockRepository.write.create).toHaveBeenCalledTimes(2);
       expect(response).toEqual(mockCreatedUrl);
+      expect(mockRepository.write.create).toHaveBeenCalledTimes(ATTEMPTS);
+      expect(logger.warn).toHaveBeenCalledTimes(ATTEMPTS - 1);
     });
   });
 });

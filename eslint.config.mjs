@@ -35,11 +35,18 @@ export default defineConfig([
       "simple-import-sort": simpleImportSort,
     },
     rules: {
-      "@typescript-eslint/no-unused-vars": "warn",
       "@typescript-eslint/no-explicit-any": "warn",
       "@typescript-eslint/consistent-type-definitions": ["error", "interface"],
       "simple-import-sort/imports": "error",
       "simple-import-sort/exports": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_", // Ignores unused function arguments starting with '_'
+          varsIgnorePattern: "^_", // Ignores unused variables (excluding function arguments) starting with '_'
+          caughtErrors: "none", // Optionally, ignore unused error variables in catch blocks
+        },
+      ],
     },
   },
   {

@@ -1,6 +1,4 @@
 import { HTTP_STATUS } from "@/constants/common";
-import { ApiError } from "@/utils/api-error";
-import { ApiErrorResponse } from "@/utils/api-error-response";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
 import { AuthSchema } from "./auth.schemas";
@@ -22,7 +20,7 @@ export interface AuthController {
 export class AuthControllerImpl implements AuthController {
   constructor(private service: AuthService) {}
 
-  public signup: AuthController["signup"] = async (req, res) => {
+  public signup: AuthController["signup"] = async (req, res, next) => {
     const { email, password } = req.body;
 
     try {
@@ -33,12 +31,11 @@ export class AuthControllerImpl implements AuthController {
         .status(HTTP_STATUS.CREATED)
         .json(new ApiSuccessResponse("User created successfully", { token }).toJSON());
     } catch (error) {
-      const err = error as ApiError;
-      res.status(err.status).json(new ApiErrorResponse(err.message).toJSON());
+      next(error);
     }
   };
 
-  public login: AuthController["login"] = async (req, res) => {
+  public login: AuthController["login"] = async (req, res, next) => {
     const { email, password } = req.body;
 
     try {
@@ -49,8 +46,7 @@ export class AuthControllerImpl implements AuthController {
         .status(HTTP_STATUS.OK)
         .json(new ApiSuccessResponse("Login successful", { token }).toJSON());
     } catch (error) {
-      const err = error as ApiError;
-      res.status(err.status).json(new ApiErrorResponse(err.message).toJSON());
+      next(error);
     }
   };
 }

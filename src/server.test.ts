@@ -1,6 +1,7 @@
 import express from "express";
 
 import { HTTP_STATUS } from "./constants/common";
+import { httpErrorHandlerMiddleware } from "./middlewares/http-error-handler";
 import { createServer } from "./server";
 import { createTestServer, TestServer } from "./test/test-server";
 
@@ -46,7 +47,6 @@ describe("App Server", () => {
     });
 
     it("Should return 404 if route does not exist", async () => {
-      const request = createTestServer(app);
       const response = await request.get("/non-existent-route");
 
       expect(response.status).toBe(HTTP_STATUS.NOT_FOUND);
@@ -54,6 +54,10 @@ describe("App Server", () => {
       expect(response.body).toHaveProperty("data", null);
       expect(response.body).toHaveProperty("message");
       expect(response.body).toHaveProperty("error");
+    });
+
+    it("Should register Error handler middleware", async () => {
+      expect(app.router.stack.some((r) => r.name === httpErrorHandlerMiddleware.name)).toBe(true);
     });
   });
 });

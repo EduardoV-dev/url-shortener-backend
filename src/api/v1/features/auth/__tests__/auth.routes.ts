@@ -92,11 +92,13 @@ describe("AuthRoutes /auth", () => {
 
     it("Throws 500 Internal Server Error for server issues", async () => {
       const { login } = getAuthServiceMocks();
-      login.mockRejectedValueOnce(
+
+      login.mockRejectedValue(
         new ApiError("Server error").setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR),
       );
 
       const response = await request.post("/login").send(authBody);
+      console.log("response", response.body, response.statusCode);
       expect(response.statusCode).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("success", false);
     });

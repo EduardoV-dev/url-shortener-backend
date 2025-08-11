@@ -1,9 +1,6 @@
 import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
 import { MOCK_USER } from "@/api/v1/test/users.mocks";
-import { HTTP_STATUS } from "@/constants/common";
 import { User } from "@/generated/prisma";
-import { MOCK_PRISMA_ERRORS } from "@/test/mocks";
-import { ApiError } from "@/utils/api-error";
 
 import { CreateUserParams, UserService, UserServiceImpl } from "../user.service";
 
@@ -38,35 +35,6 @@ describe("UserService", () => {
       const response = await service.create(params);
       expect(response).toEqual(createdUser);
     });
-
-    it("Throws a different error than ApiError when an unexpected error occurs (like bcrypt not working)", async () => {
-      const error = new Error("Bcrypt hash did not work");
-      repository.write.create.mockRejectedValue(error);
-
-      const response = service.create(params);
-
-      expect(response).rejects.toThrow(ApiError);
-      expect(response).rejects.toHaveProperty("status", HTTP_STATUS.INTERNAL_SERVER_ERROR);
-      expect(response).rejects.toHaveProperty("details", error);
-    });
-
-    it("Throws error when email already exists", async () => {
-      repository.write.create.mockRejectedValue(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED);
-
-      const response = service.create(params);
-
-      expect(response).rejects.toThrow(ApiError);
-      expect(response).rejects.toHaveProperty("status", HTTP_STATUS.CONFLICT);
-    });
-
-    it("Throws error on internal server error", async () => {
-      repository.write.create.mockRejectedValue(new Error("Internal server error"));
-
-      const response = service.create(params);
-
-      expect(response).rejects.toThrow(ApiError);
-      expect(response).rejects.toHaveProperty("status", HTTP_STATUS.INTERNAL_SERVER_ERROR);
-    });
   });
 
   describe("findByEmail", () => {
@@ -77,16 +45,6 @@ describe("UserService", () => {
 
       const response = await service.findByEmail(MOCK_USER.email);
       expect(response).toEqual(MOCK_USER);
-    });
-
-    it("Throws an error when something goes wrong", async () => {
-      repository.read.findOne.mockRejectedValue(
-        new ApiError("Message").setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR),
-      );
-
-      const response = service.findByEmail(MOCK_USER.email);
-      expect(response).rejects.toThrow(ApiError);
-      expect(response).rejects.toHaveProperty("status", HTTP_STATUS.INTERNAL_SERVER_ERROR);
     });
   });
 });
