@@ -11,12 +11,17 @@ import { ShortenRepository } from "./shorten.repository";
  */
 export interface ShortenService {
   /**
-   * Creates a new shortened URL.
+   * Creates a new shortened URL. If userId is provided, associates the URL with the user.
+   * If userId is not provided, the URL is created anonymously.
+   * This method generates a unique short code for the URL and stores it in the database.
+   * It uses a retry mechanism to handle potential unique constraint violations.
+   *
    * @param url - The original URL to shorten.
+   * @param userId - Optional user ID for associating the URL with a user.
    * @returns The created Url object.
    * @throws HttpError if creation fails.
    */
-  createShortUrl: (url: string) => Promise<Url>;
+  createShortUrl: (url: string, userId?: string) => Promise<Url>;
 }
 
 export interface ShortenServiceConstructor {
@@ -48,7 +53,9 @@ export class ShortenServiceImpl implements ShortenService {
     this.retry = retry;
   }
 
-  public createShortUrl: ShortenService["createShortUrl"] = async (url) => {
+  public createShortUrl: ShortenService["createShortUrl"] = async (url, userId = undefined) => {
+    logger.info(`Creating short URL for: ${url}`);
+
     const retry = this.retry
       .setOnRetry((error, attempt) => {
         logger.warn(`UrlShortenerController.createUrl | Attempt ${attempt} failed:`, error);
@@ -56,14 +63,12 @@ export class ShortenServiceImpl implements ShortenService {
       .setShouldRetry(PrismaErrorHandlerImpl.checkUniqueConstraint);
 
     return await retry.execute(async () => {
-      logger.info(`Creating short URL for: ${url}`);
-
       const shortId: string = await this.codeGenerator.generateByRange(
         MIN_CODE_LENGTH,
         MAX_CODE_LENGTH,
       );
 
-      return await this.repository.write.create({ shortId, longUrl: url });
+      return await this.repository.write.create({ shortId, longUrl: url, userId });
     });
   };
 }

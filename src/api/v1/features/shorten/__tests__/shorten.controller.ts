@@ -24,7 +24,10 @@ describe("UrlShortenerController", () => {
   });
 
   describe("createUrl", () => {
-    const req = { body: { url: "https://example.com" } } as Request;
+    const req = {
+      body: { url: "https://example.com" },
+      userId: "valid-user-id",
+    } as Request;
 
     it("should return 201 and the short url on success", async () => {
       mockService.createShortUrl.mockResolvedValue(MOCK_URL);

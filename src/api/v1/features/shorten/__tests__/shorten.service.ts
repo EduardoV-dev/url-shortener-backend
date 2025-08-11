@@ -30,33 +30,62 @@ describe("UrlShortenerService", () => {
 
   describe("createShortUrl", () => {
     const paramUrl = "https://github.com/EduardoV-dev";
+    const paramId = "user-id";
     const mockGeneratedCode = "my-code";
 
-    it("Should generate a short code and create an URL using the repository", async () => {
-      const mockCreatedUrl: Url = {
-        ...MOCK_URL,
-        shortId: mockGeneratedCode,
-        longUrl: paramUrl,
-      };
+    const mockCreatedUrl: Url = {
+      ...MOCK_URL,
+      shortId: mockGeneratedCode,
+      longUrl: paramUrl,
+      userId: null,
+    };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
 
       mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
       mockRepository.write.create.mockResolvedValue(mockCreatedUrl);
+    });
 
-      const response = await service.createShortUrl(paramUrl);
+    it("Generates short codes correctly", () => {
+      service.createShortUrl(paramUrl);
 
       expect(mockCodeGenerator.generateByRange).toHaveBeenCalledTimes(1);
       expect(mockCodeGenerator.generateByRange).toHaveBeenCalledWith(
         MIN_CODE_LENGTH,
         MAX_CODE_LENGTH,
       );
+    });
+
+    it("Should create an URL anonymously", async () => {
+      const response = await service.createShortUrl(paramUrl);
 
       expect(mockRepository.write.create).toHaveBeenCalledTimes(1);
       expect(mockRepository.write.create).toHaveBeenCalledWith({
         shortId: mockGeneratedCode,
         longUrl: paramUrl,
+        userId: undefined,
       });
 
       expect(response).toEqual(mockCreatedUrl);
+    });
+
+    it("Creates a short URL with userId if provided", async () => {
+      const createdUrl: Url = {
+        ...mockCreatedUrl,
+        userId: paramId,
+      };
+      mockRepository.write.create.mockResolvedValue(createdUrl);
+
+      const response = await service.createShortUrl(paramUrl, paramId);
+      expect(mockRepository.write.create).toHaveBeenCalledTimes(1);
+      expect(mockRepository.write.create).toHaveBeenCalledWith({
+        shortId: mockGeneratedCode,
+        longUrl: paramUrl,
+        userId: paramId,
+      });
+
+      expect(response).toEqual(createdUrl);
     });
 
     it("Should retry when SHORT_ID_ALREADY_EXISTS error occurs and succeed on second attempt (logs every failed attempt)", async () => {

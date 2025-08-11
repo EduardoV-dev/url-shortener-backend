@@ -37,13 +37,12 @@ export interface AuthService {
   signup: (param: AuthSchema) => Promise<AuthResponse>;
 }
 
-const JWT_EXPIRES_IN = "1h";
-
 export class AuthServiceImpl implements AuthService {
   constructor(private userService: UserService) {}
 
   private createJwtToken = ({ email, id }: User): string =>
-    jwt.sign({ email, id }, ENVS.JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+    // as number added so typescript doesn't complain about the type of expiresIn
+    jwt.sign({ email, id }, ENVS.JWT_SECRET, { expiresIn: ENVS.JWT_EXPIRES_IN as number });
 
   public signup: AuthService["signup"] = async (params) => {
     const user = await this.userService.create(params);

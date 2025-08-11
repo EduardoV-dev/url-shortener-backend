@@ -4,6 +4,7 @@ import { Url } from "@/generated/prisma";
 import { HttpRequestValidator } from "@/middlewares/http-request-validator";
 import { RetryImpl } from "@/utils/retry";
 
+import { bypassAuthenticationMiddleware } from "../../middlewares/auth";
 import { ReadRepositoryImpl, WriteRepositoryImpl } from "../../repositories";
 import { ShortCodeGenerator } from "./short-code-generator";
 import { ShortenControllerImpl } from "./shorten.controller";
@@ -23,7 +24,12 @@ const controller = new ShortenControllerImpl(service);
 
 const router = Router();
 
-router.post("", HttpRequestValidator.validate(urlSchema), controller.createUrl);
+router.post(
+  "",
+  bypassAuthenticationMiddleware,
+  HttpRequestValidator.validate(urlSchema),
+  controller.createUrl,
+);
 
 export default router;
 

@@ -41,6 +41,12 @@ describe("AuthController", () => {
       expect(next).not.toHaveBeenCalled();
     });
 
+    it("Includes userId in the request context", async () => {
+      service.signup.mockResolvedValue(authenticatedResponse);
+      await controller.signup(req, res, next);
+      expect(req.userId).toBe(MOCK_USER.id);
+    });
+
     it("Creates a new user successfully", async () => {
       service.signup.mockResolvedValue(authenticatedResponse);
       await controller.signup(req, res, next);
@@ -74,6 +80,12 @@ describe("AuthController", () => {
 
       expect(res.status).toHaveBeenCalledTimes(1);
       expect(res.json).toHaveBeenCalledTimes(1);
+    });
+
+    it("Includes userId in the request context", async () => {
+      service.login.mockResolvedValue(authenticatedResponse);
+      await controller.login(req, res, next);
+      expect(req.userId).toBe(MOCK_USER.id);
     });
 
     it("Returns a success response with JWT token", async () => {

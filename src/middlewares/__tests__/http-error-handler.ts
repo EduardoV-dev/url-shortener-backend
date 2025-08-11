@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import { HTTP_STATUS } from "@/constants/common";
 import { Prisma } from "@/generated/prisma";
 import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
+import { ApiError } from "@/utils/api-error";
 
 import { httpErrorHandlerMiddleware } from "../http-error-handler";
 
@@ -124,5 +125,21 @@ describe("Error Handler Middleware (httpErrorHandlerMiddleware)", () => {
     httpErrorHandlerMiddleware(new Error("Test error"), req, res, next);
     expect(res.status).toHaveBeenCalledTimes(1);
     expect(res.json).toHaveBeenCalledTimes(1);
+  });
+
+  it("Handles custom ApiError instances", () => {
+    httpErrorHandlerMiddleware(
+      new ApiError("Custom error").setStatus(HTTP_STATUS.UNAUTHORIZED),
+      req,
+      res,
+      next,
+    );
+    expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.UNAUTHORIZED);
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        success: false,
+        message: "Custom error",
+      }),
+    );
   });
 });

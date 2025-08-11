@@ -64,19 +64,22 @@ const getApiError = (error: unknown): ApiError => {
  * @param {Response<APIResponse>} res - The Express response object.
  * @param {NextFunction} _next - The next middleware function in the stack (not
  * used in this middleware).
- * @returns {void}
  */
 export const httpErrorHandlerMiddleware = (
   err: unknown,
   req: Request,
   res: Response<APIResponse>,
   _next: NextFunction,
-): void => {
+) => {
   logger.error(`Error occurred during [${req.method}]: ${req.originalUrl}`, err);
+
+  const isApiError = err instanceof ApiError;
+  if (isApiError)
+    return res.status(err.status).json(new ApiErrorResponse(err.message, err.details).toJSON());
 
   const apiError = getApiError(err);
 
-  res
+  return res
     .status(apiError.status)
     .json(new ApiErrorResponse(apiError.message, apiError.details).toJSON());
 };

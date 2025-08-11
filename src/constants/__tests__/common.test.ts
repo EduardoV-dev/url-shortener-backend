@@ -14,24 +14,28 @@ describe("MORGAN_SETTING", () => {
 
 describe("HTTP_STATUS", () => {
   it("should have correct status codes", () => {
-    expect(HTTP_STATUS.OK).toBe(200);
-    expect(HTTP_STATUS.CREATED).toBe(201);
-    expect(HTTP_STATUS.NO_CONTENT).toBe(204);
-    expect(HTTP_STATUS.BAD_REQUEST).toBe(400);
-    expect(HTTP_STATUS.UNAUTHORIZED).toBe(401);
-    expect(HTTP_STATUS.FORBIDDEN).toBe(403);
-    expect(HTTP_STATUS.NOT_FOUND).toBe(404);
-    expect(HTTP_STATUS.CONFLICT).toBe(409);
-    expect(HTTP_STATUS.INTERNAL_SERVER_ERROR).toBe(500);
+    expect(HTTP_STATUS).toEqual({
+      OK: 200,
+      CREATED: 201,
+      NO_CONTENT: 204,
+      BAD_REQUEST: 400,
+      UNAUTHORIZED: 401,
+      FORBIDDEN: 403,
+      NOT_FOUND: 404,
+      CONFLICT: 409,
+      INTERNAL_SERVER_ERROR: 500,
+    });
   });
 });
 
 describe("PRISMA_CODES", () => {
   it("should have RECORD_NOT_FOUND as 'P2025'", () => {
-    expect(PRISMA_CODES.VALUE_TOO_LONG).toBe("P2000");
-    expect(PRISMA_CODES.UNIQUE_CONSTRAINT_FAILED).toBe("P2002");
-    expect(PRISMA_CODES.FOREIGN_KEY_CONSTRAINT_FAILED).toBe("P2003");
-    expect(PRISMA_CODES.RECORD_NOT_FOUND).toBe("P2025");
+    expect(PRISMA_CODES).toEqual({
+      VALUE_TOO_LONG: "P2000",
+      UNIQUE_CONSTRAINT_FAILED: "P2002",
+      FOREIGN_KEY_CONSTRAINT_FAILED: "P2003",
+      RECORD_NOT_FOUND: "P2025",
+    });
   });
 
   it("should be immutable (frozen)", () => {

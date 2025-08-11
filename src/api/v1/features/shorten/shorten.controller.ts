@@ -14,7 +14,7 @@ export class ShortenControllerImpl implements ShortenController {
   public createUrl: ShortenController["createUrl"] = async (req, res, next) => {
     try {
       const { url: urlString } = req.body;
-      const url: Url = await this.service.createShortUrl(urlString);
+      const url: Url = await this.service.createShortUrl(urlString, req.userId);
 
       res
         .status(HTTP_STATUS.CREATED)

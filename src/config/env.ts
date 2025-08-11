@@ -10,6 +10,7 @@ dotenv.config({
 export const ENVS = Object.freeze({
   CORS_ORIGINS: process.env.CORS_ORIGINS || "",
   DATABASE_URL: process.env.DATABASE_URL || "",
+  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "1d",
   JWT_SECRET: process.env.JWT_SECRET || "secret",
   LOG_LEVEL: process.env.LOG_LEVEL || "info",
   NODE_ENV: process.env.NODE_ENV || "development",
