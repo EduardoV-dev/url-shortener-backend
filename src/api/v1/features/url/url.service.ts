@@ -19,9 +19,15 @@ export interface UrlService {
    * @param url - The original URL to shorten.
    * @param userId - Optional user ID for associating the URL with a user.
    * @returns The created Url object.
-   * @throws HttpError if creation fails.
    */
   createShortUrl: (url: string, userId?: string) => Promise<Url>;
+  /**
+   * Finds a shortened URL by its short ID.
+   * @param shortId - The short ID of the URL to find.
+   * @returns The Url object if found.
+   * @throws ApiError if the URL is not found.
+   */
+  find: (shortId: string) => Promise<Url | null>;
 }
 
 interface UrlServiceConstructor {
@@ -70,5 +76,12 @@ export class UrlServiceImpl implements UrlService {
 
       return await this.repository.write.create({ shortId, longUrl: url, userId });
     });
+  };
+
+  public find: UrlService["find"] = async (shortId) => {
+    logger.info(`Finding URL with shortId: ${shortId}`);
+
+    const url: Url | null = await this.repository.read.setWhere({ shortId }).findOne();
+    return url;
   };
 }

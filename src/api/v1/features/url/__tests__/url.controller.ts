@@ -6,11 +6,11 @@ import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
 import { UrlControllerImpl } from "../url.controller";
-import { MOCK_SHORTEN_SERVICE, MockShortenService } from "./url.service";
+import { MOCK_SHORTEN_SERVICE, MockUrlService } from "./url.service";
 
-describe("UrlShortenerController", () => {
+describe("UrlController", () => {
   let controller: UrlControllerImpl;
-  let mockService: MockShortenService;
+  let mockService: MockUrlService;
   let res: jest.Mocked<Response>;
   let next: jest.Mock;
 
@@ -47,7 +47,7 @@ describe("UrlShortenerController", () => {
       );
     });
 
-    it("Should return 409 if shortId is already taken", async () => {
+    it("Should call next with the error in case an error appears", async () => {
       mockService.createShortUrl.mockRejectedValue(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED);
 
       await controller.createUrl(req, res, next);
@@ -56,16 +56,24 @@ describe("UrlShortenerController", () => {
       expect(res.status).not.toHaveBeenCalled();
       expect(res.json).not.toHaveBeenCalled();
     });
+  });
 
-    it("should return 500 and error message on failure", async () => {
-      const error = new Error("Internal Server Error");
-      mockService.createShortUrl.mockRejectedValue(error);
+  describe("redirectUrl", () => {
+    const req = {
+      params: { shortId: "valid-short-id" },
+    } as Request<{ shortId: string }>;
 
-      await controller.createUrl(req, res, next);
+    it("Should redirect to the long url correctly", async () => {
+      mockService.find.mockResolvedValue(MOCK_URL);
+      await controller.redirect(req, res, next);
+      expect(res.redirect).toHaveBeenCalledWith(MOCK_URL.longUrl);
+    });
 
-      expect(next).toHaveBeenCalledWith(error);
-      expect(res.status).not.toHaveBeenCalled();
-      expect(res.json).not.toHaveBeenCalled();
+    it("Should call next with the error in case an error appears", async () => {
+      mockService.find.mockRejectedValue(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
+      await controller.redirect(req, res, next);
+      expect(next).toHaveBeenCalledWith(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
+      expect(res.redirect).not.toHaveBeenCalled();
     });
   });
 });

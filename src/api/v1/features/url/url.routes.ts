@@ -24,12 +24,14 @@ const controller = new UrlControllerImpl(service);
 
 const router = Router();
 
-router.post(
-  "",
-  bypassAuthenticationMiddleware,
-  HttpRequestValidator.validate(urlSchema),
-  controller.createUrl,
-);
+router
+  .get("/redirect/:shortId", controller.redirect)
+  .post(
+    "",
+    bypassAuthenticationMiddleware,
+    HttpRequestValidator.validate(urlSchema),
+    controller.createUrl,
+  );
 
 export default router;
 

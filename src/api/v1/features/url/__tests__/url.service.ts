@@ -8,7 +8,7 @@ import { Retry, RetryImpl } from "@/utils/retry";
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
 import { UrlService, UrlServiceImpl } from "../url.service";
 
-describe("UrlShortenerService", () => {
+describe("UrlService", () => {
   let service: UrlServiceImpl;
   let mockRepository: MockRepository<Url>;
   let mockCodeGenerator: jest.Mocked<CodeGenerator>;
@@ -110,10 +110,37 @@ describe("UrlShortenerService", () => {
       expect(logger.warn).toHaveBeenCalledTimes(ATTEMPTS - 1);
     });
   });
+
+  describe("find", () => {
+    it("Should find a single url with the unique shortId", async () => {
+      mockRepository.read.setWhere({ shortId: MOCK_URL.shortId }).findOne = jest
+        .fn()
+        .mockResolvedValue(MOCK_URL);
+
+      const response = await service.find(MOCK_URL.shortId);
+
+      expect(mockRepository.read.setWhere).toHaveBeenCalledWith({ shortId: MOCK_URL.shortId });
+      expect(mockRepository.read.findOne).toHaveBeenCalledTimes(1);
+      expect(response).toEqual(MOCK_URL);
+    });
+
+    it("Should return null if no URL is found with the given shortId", async () => {
+      mockRepository.read.setWhere({ shortId: "nonexistant" }).findOne = jest
+        .fn()
+        .mockResolvedValue(null);
+
+      const response = await service.find("nonexistant");
+
+      expect(mockRepository.read.setWhere).toHaveBeenCalledWith({ shortId: "nonexistant" });
+      expect(mockRepository.read.findOne).toHaveBeenCalledTimes(1);
+      expect(response).toBeNull();
+    });
+  });
 });
 
-export type MockShortenService = MockInterface<UrlService>;
+export type MockUrlService = MockInterface<UrlService>;
 
-export const MOCK_SHORTEN_SERVICE: MockShortenService = {
+export const MOCK_SHORTEN_SERVICE: MockUrlService = {
   createShortUrl: jest.fn(),
+  find: jest.fn(),
 };

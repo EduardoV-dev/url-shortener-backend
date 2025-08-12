@@ -4,8 +4,9 @@ import { PRISMA_CODES } from "@/constants/common";
 import { Prisma } from "@/generated/prisma";
 
 export const MOCK_RESPONSE_EXPRESS: any = {
-  status: jest.fn().mockReturnThis(),
   json: jest.fn().mockReturnThis(),
+  redirect: jest.fn().mockReturnThis(),
+  status: jest.fn().mockReturnThis(),
 };
 
 export type MockInterface<T> = {
