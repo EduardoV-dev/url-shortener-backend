@@ -125,13 +125,13 @@ describe("UrlService", () => {
     });
 
     it("Should return null if no URL is found with the given shortId", async () => {
-      mockRepository.read.setWhere({ shortId: "unexistant" }).findOne = jest
+      mockRepository.read.setWhere({ shortId: "nonexistant" }).findOne = jest
         .fn()
         .mockResolvedValue(null);
 
-      const response = await service.find("unexistant");
+      const response = await service.find("nonexistant");
 
-      expect(mockRepository.read.setWhere).toHaveBeenCalledWith({ shortId: "unexistant" });
+      expect(mockRepository.read.setWhere).toHaveBeenCalledWith({ shortId: "nonexistant" });
       expect(mockRepository.read.findOne).toHaveBeenCalledTimes(1);
       expect(response).toBeNull();
     });
