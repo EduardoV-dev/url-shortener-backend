@@ -6,7 +6,7 @@ import { logger } from "@/utils/logger";
 import { Retry, RetryImpl } from "@/utils/retry";
 
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
-import { ShortenService, ShortenServiceImpl } from "../shorten.service";
+import { ShortenService, ShortenServiceImpl } from "../url.service";
 
 describe("UrlShortenerService", () => {
   let service: ShortenServiceImpl;

@@ -4,7 +4,7 @@ import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { createTestServer, type Response } from "@/test/test-server";
 
-import routes from "../shorten.routes";
+import routes from "../url.routes";
 
 const request = createTestServer(routes);
 
@@ -19,7 +19,7 @@ jest.mock("../../../middlewares/auth", () => ({
 }));
 
 // TODO: Move this mock to a shared place if needed in other tests
-jest.mock("../shorten.service", () => ({
+jest.mock("../url.service", () => ({
   ShortenServiceImpl: jest.fn().mockImplementation(() => ({
     createShortUrl: jest.fn().mockImplementation((_url: string, userId?: string) => {
       if (userId) return Promise.resolve({ ...MOCK_URL, userId });

@@ -7,10 +7,10 @@ import { RetryImpl } from "@/utils/retry";
 import { bypassAuthenticationMiddleware } from "../../middlewares/auth";
 import { ReadRepositoryImpl, WriteRepositoryImpl } from "../../repositories";
 import { ShortCodeGenerator } from "./short-code-generator";
-import { ShortenControllerImpl } from "./shorten.controller";
-import { ShortenRepositoryImpl } from "./shorten.repository";
-import { urlSchema } from "./shorten.schemas";
-import { ShortenServiceImpl } from "./shorten.service";
+import { ShortenControllerImpl } from "./url.controller";
+import { ShortenRepositoryImpl } from "./url.repository";
+import { urlSchema } from "./url.schemas";
+import { ShortenServiceImpl } from "./url.service";
 
 const readRepository = new ReadRepositoryImpl<Url>("url");
 const writeRepository = new WriteRepositoryImpl<Url>("url");
@@ -33,4 +33,4 @@ router.post(
 
 export default router;
 
-export const shortenRoutePath = "/shorten";
+export const urlRoutePath = "/urls";

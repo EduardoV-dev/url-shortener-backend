@@ -5,8 +5,8 @@ import { HTTP_STATUS } from "@/constants/common";
 import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
-import { ShortenControllerImpl } from "../shorten.controller";
-import { MOCK_SHORTEN_SERVICE, MockShortenService } from "./shorten.service";
+import { ShortenControllerImpl } from "../url.controller";
+import { MOCK_SHORTEN_SERVICE, MockShortenService } from "./url.service";
 
 describe("UrlShortenerController", () => {
   let controller: ShortenControllerImpl;

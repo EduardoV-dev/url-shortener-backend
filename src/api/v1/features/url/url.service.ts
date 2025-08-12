@@ -4,7 +4,7 @@ import { Retry } from "@/utils/retry";
 
 import { PrismaErrorHandlerImpl } from "../../utils/prisma-error-handler";
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "./short-code-generator";
-import { ShortenRepository } from "./shorten.repository";
+import { ShortenRepository } from "./url.repository";
 
 /**
  * Service interface for URL shortener business logic.

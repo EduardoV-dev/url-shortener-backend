@@ -2,7 +2,7 @@ import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
-import { ShortenService } from "./shorten.service";
+import { ShortenService } from "./url.service";
 
 interface ShortenController {
   createUrl: ControllerMethod<unknown, { url: string }>;
