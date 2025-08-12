@@ -25,6 +25,10 @@ jest.mock("../url.service", () => ({
       if (userId) return Promise.resolve({ ...MOCK_URL, userId });
       else return Promise.resolve({ ...MOCK_URL, userId: null });
     }),
+    find: jest.fn().mockImplementation((shortId: string) => {
+      if (shortId === "valid-short-id") return Promise.resolve({ longUrl: "https://long-url.com" });
+      else return Promise.resolve(null);
+    }),
   })),
 }));
 
@@ -59,6 +63,21 @@ describe("/urls", () => {
     it("Should return 400 if url is not valid", async () => {
       const response = await request.post("").send({ url: "invalid-url" });
       assertUrlValidationError(response);
+    });
+  });
+
+  describe("[GET] /redirect/:shortId", () => {
+    it("Should redirect to the long URL", async () => {
+      const response = await request.get("/redirect/valid-short-id");
+      expect(response.statusCode).toBe(HTTP_STATUS.REDIRECT_FOUND);
+      expect(response.headers.location).toBe("https://long-url.com");
+      expect(response.body).toEqual({});
+    });
+
+    it("Should return 404 if shortId is not found", async () => {
+      const response = await request.get("/redirect/invalid-short-id");
+      expect(response.statusCode).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toHaveProperty("success", false);
     });
   });
 });
