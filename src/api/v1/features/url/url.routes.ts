@@ -7,20 +7,20 @@ import { RetryImpl } from "@/utils/retry";
 import { bypassAuthenticationMiddleware } from "../../middlewares/auth";
 import { ReadRepositoryImpl, WriteRepositoryImpl } from "../../repositories";
 import { ShortCodeGenerator } from "./short-code-generator";
-import { ShortenControllerImpl } from "./url.controller";
-import { ShortenRepositoryImpl } from "./url.repository";
+import { UrlControllerImpl } from "./url.controller";
+import { UrlRepositoryImpl } from "./url.repository";
 import { urlSchema } from "./url.schemas";
-import { ShortenServiceImpl } from "./url.service";
+import { UrlServiceImpl } from "./url.service";
 
 const readRepository = new ReadRepositoryImpl<Url>("url");
 const writeRepository = new WriteRepositoryImpl<Url>("url");
-const repository = new ShortenRepositoryImpl(readRepository, writeRepository);
+const repository = new UrlRepositoryImpl(readRepository, writeRepository);
 
 const codeGenerator = new ShortCodeGenerator();
 const retry = new RetryImpl();
 
-const service = new ShortenServiceImpl({ codeGenerator, repository, retry });
-const controller = new ShortenControllerImpl(service);
+const service = new UrlServiceImpl({ codeGenerator, repository, retry });
+const controller = new UrlControllerImpl(service);
 
 const router = Router();
 

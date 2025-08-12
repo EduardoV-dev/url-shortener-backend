@@ -6,10 +6,10 @@ import { logger } from "@/utils/logger";
 import { Retry, RetryImpl } from "@/utils/retry";
 
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
-import { ShortenService, ShortenServiceImpl } from "../url.service";
+import { UrlService, UrlServiceImpl } from "../url.service";
 
 describe("UrlShortenerService", () => {
-  let service: ShortenServiceImpl;
+  let service: UrlServiceImpl;
   let mockRepository: MockRepository<Url>;
   let mockCodeGenerator: jest.Mocked<CodeGenerator>;
   let mockRetry: Retry;
@@ -21,7 +21,7 @@ describe("UrlShortenerService", () => {
     mockCodeGenerator = { generateByRange: jest.fn() };
     mockRetry = new RetryImpl().setDelayMs(0);
 
-    service = new ShortenServiceImpl({
+    service = new UrlServiceImpl({
       codeGenerator: mockCodeGenerator,
       repository: mockRepository,
       retry: mockRetry,
@@ -112,7 +112,7 @@ describe("UrlShortenerService", () => {
   });
 });
 
-export type MockShortenService = MockInterface<ShortenService>;
+export type MockShortenService = MockInterface<UrlService>;
 
 export const MOCK_SHORTEN_SERVICE: MockShortenService = {
   createShortUrl: jest.fn(),

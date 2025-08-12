@@ -20,7 +20,7 @@ jest.mock("../../../middlewares/auth", () => ({
 
 // TODO: Move this mock to a shared place if needed in other tests
 jest.mock("../url.service", () => ({
-  ShortenServiceImpl: jest.fn().mockImplementation(() => ({
+  UrlServiceImpl: jest.fn().mockImplementation(() => ({
     createShortUrl: jest.fn().mockImplementation((_url: string, userId?: string) => {
       if (userId) return Promise.resolve({ ...MOCK_URL, userId });
       else return Promise.resolve({ ...MOCK_URL, userId: null });
@@ -28,7 +28,7 @@ jest.mock("../url.service", () => ({
   })),
 }));
 
-describe("/shorten", () => {
+describe("/urls", () => {
   describe("[POST] /", () => {
     it("Should create a url anonymously", async () => {
       const response = await request.post("").send({ url: "https://github.com/" });

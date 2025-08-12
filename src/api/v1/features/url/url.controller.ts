@@ -2,16 +2,16 @@ import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
-import { ShortenService } from "./url.service";
+import { UrlService } from "./url.service";
 
-interface ShortenController {
+interface UrlController {
   createUrl: ControllerMethod<unknown, { url: string }>;
 }
 
-export class ShortenControllerImpl implements ShortenController {
-  constructor(private service: ShortenService) {}
+export class UrlControllerImpl implements UrlController {
+  constructor(private service: UrlService) {}
 
-  public createUrl: ShortenController["createUrl"] = async (req, res, next) => {
+  public createUrl: UrlController["createUrl"] = async (req, res, next) => {
     try {
       const { url: urlString } = req.body;
       const url: Url = await this.service.createShortUrl(urlString, req.userId);

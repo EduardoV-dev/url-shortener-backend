@@ -4,12 +4,12 @@ import { Retry } from "@/utils/retry";
 
 import { PrismaErrorHandlerImpl } from "../../utils/prisma-error-handler";
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "./short-code-generator";
-import { ShortenRepository } from "./url.repository";
+import { UrlRepository } from "./url.repository";
 
 /**
  * Service interface for URL shortener business logic.
  */
-export interface ShortenService {
+export interface UrlService {
   /**
    * Creates a new shortened URL. If userId is provided, associates the URL with the user.
    * If userId is not provided, the URL is created anonymously.
@@ -24,11 +24,11 @@ export interface ShortenService {
   createShortUrl: (url: string, userId?: string) => Promise<Url>;
 }
 
-export interface ShortenServiceConstructor {
+interface UrlServiceConstructor {
   /**
    * Repository for accessing and manipulating shortened URLs.
    */
-  repository: ShortenRepository;
+  repository: UrlRepository;
   /**
    * Code generator for generating unique short codes.
    */
@@ -42,18 +42,18 @@ export interface ShortenServiceConstructor {
 /**
  * Implementation of the Service interface for URL shortener logic.
  */
-export class ShortenServiceImpl implements ShortenService {
+export class UrlServiceImpl implements UrlService {
   private readonly codeGenerator: CodeGenerator;
-  private readonly repository: ShortenRepository;
+  private readonly repository: UrlRepository;
   private readonly retry: Retry;
 
-  constructor({ codeGenerator, repository, retry }: ShortenServiceConstructor) {
+  constructor({ codeGenerator, repository, retry }: UrlServiceConstructor) {
     this.codeGenerator = codeGenerator;
     this.repository = repository;
     this.retry = retry;
   }
 
-  public createShortUrl: ShortenService["createShortUrl"] = async (url, userId = undefined) => {
+  public createShortUrl: UrlService["createShortUrl"] = async (url, userId = undefined) => {
     logger.info(`Creating short URL for: ${url}`);
 
     const retry = this.retry

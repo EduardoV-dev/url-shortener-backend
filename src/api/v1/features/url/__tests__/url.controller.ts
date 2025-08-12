@@ -5,11 +5,11 @@ import { HTTP_STATUS } from "@/constants/common";
 import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
-import { ShortenControllerImpl } from "../url.controller";
+import { UrlControllerImpl } from "../url.controller";
 import { MOCK_SHORTEN_SERVICE, MockShortenService } from "./url.service";
 
 describe("UrlShortenerController", () => {
-  let controller: ShortenControllerImpl;
+  let controller: UrlControllerImpl;
   let mockService: MockShortenService;
   let res: jest.Mocked<Response>;
   let next: jest.Mock;
@@ -18,7 +18,7 @@ describe("UrlShortenerController", () => {
     jest.clearAllMocks();
 
     mockService = MOCK_SHORTEN_SERVICE;
-    controller = new ShortenControllerImpl(mockService);
+    controller = new UrlControllerImpl(mockService);
     res = MOCK_RESPONSE_EXPRESS;
     next = jest.fn();
   });
