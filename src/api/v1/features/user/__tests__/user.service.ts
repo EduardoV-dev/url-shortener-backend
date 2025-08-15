@@ -39,7 +39,7 @@ describe("UserService", () => {
 
   describe("findByEmail", () => {
     it("Should return user by email", async () => {
-      repository.read.setWhere({ email: MOCK_USER.email }).findOne = jest
+      repository.read.findOne().setWhere({ email: MOCK_USER.email }).execute = jest
         .fn()
         .mockResolvedValue(MOCK_USER);
 

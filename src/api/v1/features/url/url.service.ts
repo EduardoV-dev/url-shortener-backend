@@ -2,9 +2,24 @@ import { Url } from "@/generated/prisma";
 import { logger } from "@/utils/logger";
 import { Retry } from "@/utils/retry";
 
+import { PaginationQueryParams, PaginationResponse } from "../../repositories";
 import { PrismaErrorHandlerImpl } from "../../utils/prisma-error-handler";
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "./short-code-generator";
 import { UrlRepository } from "./url.repository";
+
+export interface FindUrlsByUserIdParams {
+  /**
+   * The user ID whose URLs are to be retrieved.
+   * This is used to filter URLs associated with a specific user.
+   */
+  userId: string;
+  /**
+   * Pagination parameters for retrieving URLs.
+   * This includes page number, page size, and optional sorting parameters.
+   * @remarks This allows for efficient retrieval of URLs in a paginated manner.
+   */
+  pagination: PaginationQueryParams;
+}
 
 /**
  * Service interface for URL shortener business logic.
@@ -15,7 +30,6 @@ export interface UrlService {
    * If userId is not provided, the URL is created anonymously.
    * This method generates a unique short code for the URL and stores it in the database.
    * It uses a retry mechanism to handle potential unique constraint violations.
-   *
    * @param url - The original URL to shorten.
    * @param userId - Optional user ID for associating the URL with a user.
    * @returns The created Url object.
@@ -28,6 +42,12 @@ export interface UrlService {
    * @throws ApiError if the URL is not found.
    */
   find: (shortId: string) => Promise<Url | null>;
+  /**
+   * Finds all URLs associated with a specific user ID, with pagination support.
+   * @param userId - The user ID whose URLs are to be retrieved.
+   * @returns A paginated result containing the URLs associated with the user.
+   */
+  findByUserId: (params: FindUrlsByUserIdParams) => Promise<PaginationResponse<Url>>;
 }
 
 interface UrlServiceConstructor {
@@ -81,7 +101,14 @@ export class UrlServiceImpl implements UrlService {
   public find: UrlService["find"] = async (shortId) => {
     logger.info(`Finding URL with shortId: ${shortId}`);
 
-    const url: Url | null = await this.repository.read.setWhere({ shortId }).findOne();
+    const url: Url | null = await this.repository.read.findOne().setWhere({ shortId }).execute();
     return url;
+  };
+
+  // TODO: Implement pagination utils for this method
+  public findByUserId: UrlService["findByUserId"] = async ({ userId, pagination }) => {
+    logger.info(`Finding URLs for userId: ${userId}`);
+
+    return await this.repository.read.findAll().setPaginated().setWhere({ userId }).execute();
   };
 }

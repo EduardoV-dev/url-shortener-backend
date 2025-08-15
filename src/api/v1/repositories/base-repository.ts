@@ -13,11 +13,6 @@ export type ModelName = keyof PrismaClient;
  * Type representing a partial object of type T, used for filtering and selection.
  */
 export type Where<T> = Partial<T>;
-/**
- * Type representing a selection of fields in an object of type T, where each field can be included or excluded.
- * This is useful for specifying which fields to return in a query.
- */
-export type Select<T> = Partial<Record<keyof T, boolean>>;
 
 /**
  * Base repository class for Prisma ORM operations.

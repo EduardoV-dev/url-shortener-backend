@@ -4,7 +4,7 @@ import { Url } from "@/generated/prisma";
 import { HttpRequestValidator } from "@/middlewares/http-request-validator";
 import { RetryImpl } from "@/utils/retry";
 
-import { bypassAuthenticationMiddleware } from "../../middlewares/auth";
+import { authenticationMiddleware, bypassAuthenticationMiddleware } from "../../middlewares/auth";
 import { ReadRepositoryImpl, WriteRepositoryImpl } from "../../repositories";
 import { ShortCodeGenerator } from "./short-code-generator";
 import { UrlControllerImpl } from "./url.controller";
@@ -25,6 +25,7 @@ const controller = new UrlControllerImpl(service);
 const router = Router();
 
 router
+  .get("", authenticationMiddleware, controller.getUrlsByUserId)
   .get("/redirect/:shortId", controller.redirect)
   .post(
     "",

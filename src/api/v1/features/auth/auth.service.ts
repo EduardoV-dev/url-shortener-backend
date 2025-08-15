@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { SignOptions } from "jsonwebtoken";
 
 import { ENVS } from "@/config/env";
 import { HTTP_STATUS } from "@/constants/common";
@@ -41,8 +41,7 @@ export class AuthServiceImpl implements AuthService {
   constructor(private userService: UserService) {}
 
   private createJwtToken = ({ email, id }: User): string =>
-    // as number added so typescript doesn't complain about the type of expiresIn
-    jwt.sign({ email, id }, ENVS.JWT_SECRET, { expiresIn: ENVS.JWT_EXPIRES_IN as number });
+    jwt.sign({ email, id }, ENVS.JWT_SECRET, { expiresIn: ENVS.JWT_EXPIRES_IN } as SignOptions);
 
   public signup: AuthService["signup"] = async (params) => {
     const user = await this.userService.create(params);

@@ -1,13 +1,16 @@
 import { MockInterface } from "@/test/mocks";
 
 import { ReadRepository, WriteRepository } from "../repositories";
+import { FindAll } from "../repositories/read-repository/find-all";
+import { FindOne } from "../repositories/read-repository/find-one";
 
-/**
- * Mock type for ReadRepository interface.
- * This type is used to create a mock implementation of the ReadRepository interface for testing purposes.
- * It allows for mocking the methods of the ReadRepository interface using Jest.
- */
-export type MockReadRepository<T> = MockInterface<ReadRepository<T>>;
+export type MockFindAll<T> = MockInterface<FindAll<T>>;
+export type MockFindOne<T> = MockInterface<FindOne<T>>;
+
+export interface MockReadRepository<T> extends ReadRepository<T> {
+  findAll(): MockFindAll<T>;
+  findOne(): MockFindOne<T>;
+}
 
 /**
  * MockWriteRepository is a mock version of WriteRepository for testing purposes.
@@ -26,13 +29,29 @@ export interface MockRepository<T> {
   write: MockWriteRepository<T>;
 }
 
+const findAllMock = <T>(): MockFindAll<T> => ({
+  execute: jest.fn(),
+  setWhere: jest.fn().mockReturnThis(),
+  setOrderBy: jest.fn().mockReturnThis(),
+  setSelect: jest.fn().mockReturnThis(),
+  setPage: jest.fn().mockReturnThis(),
+  setPageSize: jest.fn().mockReturnThis(),
+  setPaginated: jest.fn().mockReturnThis(),
+});
+
+const findOneMock = <T>(): MockFindOne<T> => ({
+  execute: jest.fn(),
+  setWhere: jest.fn().mockReturnThis(),
+  setSelect: jest.fn().mockReturnThis(),
+});
+
+const readRepositoryMock = <T>(): MockReadRepository<T> => ({
+  findAll: jest.fn().mockReturnValue(findAllMock<T>()),
+  findOne: jest.fn().mockReturnValue(findOneMock<T>()),
+});
+
 export const createMockRepository = <T>(): MockRepository<T> => ({
-  read: {
-    findAll: jest.fn(),
-    findOne: jest.fn(),
-    setSelect: jest.fn().mockReturnThis(),
-    setWhere: jest.fn().mockReturnThis(),
-  },
+  read: readRepositoryMock<T>(),
   write: {
     create: jest.fn(),
     delete: jest.fn(),
