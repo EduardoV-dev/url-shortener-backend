@@ -76,4 +76,38 @@ describe("UrlController", () => {
       expect(res.redirect).not.toHaveBeenCalled();
     });
   });
+
+  describe("getUrlsByUserId", () => {
+    it("should return 200 and the urls for the user", async () => {
+      const req = {
+        userId: "valid-user-id",
+        query: { page: "1", pageSize: "10" },
+      } as Request<unknown, unknown, unknown, { page?: string; pageSize?: string }>;
+
+      const mockUrls = [MOCK_URL];
+      const mockServiceResult = {
+        results: mockUrls,
+        meta: {
+          hasNextPage: false,
+          hasPrevPage: false,
+          totalItems: 1,
+          totalPages: 1,
+          page: 1,
+          pageSize: 10,
+        },
+      };
+
+      mockService.findByUserId.mockResolvedValue(mockServiceResult);
+
+      await controller.getUrlsByUserId(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.OK);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: mockServiceResult,
+        }),
+      );
+    });
+  });
 });

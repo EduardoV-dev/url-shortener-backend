@@ -25,8 +25,15 @@ export interface UserService {
   findByEmail: (email: string) => Promise<User | null>;
 }
 
+/**
+ * Number of rounds to use when hashing passwords with bcrypt.
+ */
 const BCRYPT_SALT_ROUNDS = 10;
 
+/**
+ * Implementation of the UserService interface.
+ * It uses the UserRepository for database operations.
+ */
 export class UserServiceImpl implements UserService {
   constructor(private repository: UserRepository) {}
 
@@ -38,6 +45,6 @@ export class UserServiceImpl implements UserService {
 
   public findByEmail: UserService["findByEmail"] = async (email) => {
     logger.info("Retrieving user by email:", email);
-    return await this.repository.read.setWhere({ email }).findOne();
+    return await this.repository.read.findOne().setWhere({ email }).execute();
   };
 }

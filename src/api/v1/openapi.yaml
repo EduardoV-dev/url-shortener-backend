@@ -66,10 +66,66 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorResponse"
-  /shorten:
+  /auth/login:
     post:
       tags:
-        - shorten
+        - auth
+      summary: "Login a user"
+      operationId: "loginUser"
+      requestBody:
+        description: "User login credentials"
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: "Email address of the user"
+                password:
+                  type: string
+                  description: "Password for the user account"
+        required: true
+      responses:
+        200:
+          description: "User logged in successfully"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiSuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                            description: "JWT token"
+        400:
+          description: "Bad Request - Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        401:
+          description: "Unauthorized - Invalid credentials"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+
+  /urls:
+    post:
+      tags:
+        - urls
       summary: "Create a new short URL"
       operationId: "createShortUrl"
       requestBody:
@@ -108,8 +164,67 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorResponse"
-
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - urls
+      summary: "Retrieve all short URLs for a user"
+      operationId: "getAllShortUrlsByUserId"
+      responses:
+        200:
+          description: "List of all short URLs by user ID"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiSuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Url"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+  /urls/redirect/{shortId}:
+    get:
+      tags:
+        - urls
+      summary: "Redirect to the original URL using short ID"
+      operationId: "redirectToOriginalUrl"
+      parameters:
+        - name: shortId
+          in: path
+          required: true
+          description: "Short ID of the URL to redirect"
+          schema:
+            type: string
+      responses:
+        302:
+          description: "Redirects to the original URL"
+        404:
+          description: "Not Found - Short URL does not exist"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     ApiErrorResponse:
       type: object

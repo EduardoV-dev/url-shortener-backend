@@ -26,30 +26,28 @@ const getApiError = (error: unknown): ApiError => {
           .setStatus(HTTP_STATUS.CONFLICT)
           .setDetails(error);
       case PRISMA_CODES.FOREIGN_KEY_CONSTRAINT_FAILED:
-        return new ApiError("Foreign key constraint failed.")
-          .setStatus(HTTP_STATUS.BAD_REQUEST)
-          .setDetails(error);
+        return new ApiError("Foreign key constraint failed.").setStatus(HTTP_STATUS.BAD_REQUEST);
       case PRISMA_CODES.RECORD_NOT_FOUND:
-        return new ApiError("Record not found.").setStatus(HTTP_STATUS.NOT_FOUND).setDetails(error);
+        return new ApiError("Record not found.").setStatus(HTTP_STATUS.NOT_FOUND);
       default:
-        return new ApiError("A database error occurred.")
-          .setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-          .setDetails(error);
+        return new ApiError("A database error occurred.").setStatus(
+          HTTP_STATUS.INTERNAL_SERVER_ERROR,
+        );
     }
   }
 
   if (error instanceof Prisma.PrismaClientValidationError)
-    return new ApiError("Invalid input data.").setStatus(HTTP_STATUS.BAD_REQUEST).setDetails(error);
+    return new ApiError("Invalid input data.").setStatus(HTTP_STATUS.BAD_REQUEST);
 
   if (error instanceof Prisma.PrismaClientInitializationError)
-    return new ApiError("Database initialization error.")
-      .setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .setDetails(error);
+    return new ApiError("Database initialization error.").setStatus(
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
 
   if (error instanceof Prisma.PrismaClientRustPanicError)
-    return new ApiError("Prisma engine panic. Please try again later.")
-      .setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-      .setDetails(error);
+    return new ApiError("Prisma engine panic. Please try again later.").setStatus(
+      HTTP_STATUS.INTERNAL_SERVER_ERROR,
+    );
 
   return new ApiError("An unexpected error occurred.")
     .setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR)

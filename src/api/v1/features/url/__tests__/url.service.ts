@@ -1,4 +1,5 @@
-import { MOCK_URL } from "@/api/v1/test/links.mocks";
+import { PaginationResponse } from "@/api/v1/repositories";
+import { MOCK_URL, MOCK_URLS } from "@/api/v1/test/links.mocks";
 import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
 import { Url } from "@/generated/prisma";
 import { MOCK_PRISMA_ERRORS, MockInterface } from "@/test/mocks";
@@ -113,28 +114,68 @@ describe("UrlService", () => {
 
   describe("find", () => {
     it("Should find a single url with the unique shortId", async () => {
-      mockRepository.read.setWhere({ shortId: MOCK_URL.shortId }).findOne = jest
+      mockRepository.read.findOne().setWhere({ shortId: MOCK_URL.shortId }).execute = jest
         .fn()
         .mockResolvedValue(MOCK_URL);
 
       const response = await service.find(MOCK_URL.shortId);
 
-      expect(mockRepository.read.setWhere).toHaveBeenCalledWith({ shortId: MOCK_URL.shortId });
-      expect(mockRepository.read.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.read.findOne().setWhere).toHaveBeenCalledWith({
+        shortId: MOCK_URL.shortId,
+      });
+      expect(mockRepository.read.findOne().execute).toHaveBeenCalledTimes(1);
       expect(response).toEqual(MOCK_URL);
     });
 
     it("Should return null if no URL is found with the given shortId", async () => {
-      mockRepository.read.setWhere({ shortId: "nonexistant" }).findOne = jest
+      mockRepository.read.findOne().setWhere({ shortId: "nonexistant" }).execute = jest
         .fn()
         .mockResolvedValue(null);
 
       const response = await service.find("nonexistant");
 
-      expect(mockRepository.read.setWhere).toHaveBeenCalledWith({ shortId: "nonexistant" });
-      expect(mockRepository.read.findOne).toHaveBeenCalledTimes(1);
+      expect(mockRepository.read.findOne().setWhere).toHaveBeenCalledWith({
+        shortId: "nonexistant",
+      });
+      expect(mockRepository.read.findOne().execute).toHaveBeenCalledTimes(1);
       expect(response).toBeNull();
     });
+  });
+
+  describe("findByUserId", () => {
+    const mockUrlsByUserId = MOCK_URLS.filter((url) => url.userId === MOCK_URL.userId);
+
+    const mockResponse: PaginationResponse<Url> = {
+      results: mockUrlsByUserId,
+      meta: {
+        totalItems: mockUrlsByUserId.length,
+        page: 1,
+        pageSize: 10,
+        totalPages: 1,
+        hasPrevPage: false,
+        hasNextPage: false,
+      },
+    };
+
+    // it("Uses default pagination values if not provided", async () => {
+    //   mockRepository.read.findAll = jest.fn().mockResolvedValue(mockResponse);
+    //
+    //   const response = await service.findByUserId({ userId: MOCK_URL.userId. });
+    //   expect(response.meta!.page).toBe(PAGINATION_DEFAULTS.page);
+    //   expect(response.meta!.pageSize).toBe(PAGINATION_DEFAULTS.pageSize);
+    // });
+    //
+    // it("Should find all URLs for a given userId", async () => {
+    //   mockRepository.read.findAll = jest.fn().mockResolvedValue(mockResponse);
+    //
+    //   const response = await service.findByUserId({
+    //     userId: MOCK_URL.userId!,
+    //     page: 1,
+    //     pageSize: 10,
+    //   });
+    //
+    //   expect(response).toEqual(mockResponse);
+    // });
   });
 });
 
@@ -143,4 +184,5 @@ export type MockUrlService = MockInterface<UrlService>;
 export const MOCK_SHORTEN_SERVICE: MockUrlService = {
   createShortUrl: jest.fn(),
   find: jest.fn(),
+  findByUserId: jest.fn(),
 };

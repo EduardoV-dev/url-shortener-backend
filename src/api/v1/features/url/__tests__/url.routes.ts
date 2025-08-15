@@ -1,19 +1,30 @@
-import { NextFunction, Request as ExpressRequest } from "express";
+import { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from "express";
 
 import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { createTestServer, type Response } from "@/test/test-server";
 
 import routes from "../url.routes";
+import { FindUrlsByUserIdParams } from "../url.service";
 
 const request = createTestServer(routes);
 
 // TODO: Move this mock to a shared place if needed in other tests
 jest.mock("../../../middlewares/auth", () => ({
-  bypassAuthenticationMiddleware: (req: ExpressRequest, _res: Response, next: NextFunction) => {
+  bypassAuthenticationMiddleware: (
+    req: ExpressRequest,
+    _res: ExpressResponse,
+    next: NextFunction,
+  ) => {
     if (req.header("Authorization") === "validToken") req.userId = MOCK_URL.userId || "";
     else req.userId = undefined;
 
+    next();
+  },
+  authenticationMiddleware: (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    if (req.header("Authorization") !== "validToken")
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+    else req.userId = "valid-user-id";
     next();
   },
 }));
@@ -29,6 +40,7 @@ jest.mock("../url.service", () => ({
       if (shortId === "valid-short-id") return Promise.resolve({ longUrl: "https://long-url.com" });
       else return Promise.resolve(null);
     }),
+    findByUserId: jest.fn().mockResolvedValue(MOCK_URL),
   })),
 }));
 

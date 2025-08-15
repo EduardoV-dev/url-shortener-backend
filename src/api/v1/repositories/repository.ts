@@ -12,6 +12,8 @@ export interface Repository<T> {
   write: WriteRepository<T>;
 }
 
+// TODO: Refactor repository to not use read and write, but instead, have its methods at the same level
+// TODO: Place repository at src level, not in api/v1, so it can be used in other APIs
 /**
  * Generic repository class that provides read and write operations for a specific Prisma model.
  */

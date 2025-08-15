@@ -3,6 +3,7 @@ import { Url } from "@/generated/prisma";
 import { ApiError } from "@/utils/api-error";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
+import { PaginationQueryParams } from "../../repositories";
 import { UrlService } from "./url.service";
 
 interface UrlController {
@@ -14,6 +15,10 @@ interface UrlController {
    * Redirects to the original URL based on the short ID.
    */
   redirect: ControllerMethod<{ shortId: string }>;
+  /**
+   * Retrieves all URLs associated with a specific user ID.
+   */
+  getUrlsByUserId: ControllerMethod<unknown, unknown, PaginationQueryParams>;
 }
 
 export class UrlControllerImpl implements UrlController {
@@ -39,6 +44,29 @@ export class UrlControllerImpl implements UrlController {
 
       if (!url) throw new ApiError("URL not found").setStatus(HTTP_STATUS.NOT_FOUND);
       res.redirect(url.longUrl);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  public getUrlsByUserId: UrlController["getUrlsByUserId"] = async (req, res, next) => {
+    try {
+      const { page, pageSize, sortBy, sortOrder }: PaginationQueryParams =
+        req.query as PaginationQueryParams;
+
+      const urls = await this.service.findByUserId({
+        userId: req.userId!,
+        pagination: {
+          page,
+          pageSize,
+          sortBy,
+          sortOrder,
+        },
+      });
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(new ApiSuccessResponse("Urls retrieved successfully", urls).toJSON());
     } catch (err) {
       next(err);
     }
