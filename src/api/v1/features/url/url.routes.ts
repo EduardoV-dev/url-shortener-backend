@@ -1,20 +1,17 @@
 import { Router } from "express";
 
-import { Url } from "@/generated/prisma";
 import { HttpRequestValidator } from "@/middlewares/http-request-validator";
+import { prisma } from "@/storage/prisma";
 import { RetryImpl } from "@/utils/retry";
 
 import { authenticationMiddleware, bypassAuthenticationMiddleware } from "../../middlewares/auth";
-import { ReadRepositoryImpl, WriteRepositoryImpl } from "../../repositories";
 import { ShortCodeGenerator } from "./short-code-generator";
 import { UrlControllerImpl } from "./url.controller";
 import { UrlRepositoryImpl } from "./url.repository";
 import { urlSchema } from "./url.schemas";
 import { UrlServiceImpl } from "./url.service";
 
-const readRepository = new ReadRepositoryImpl<Url>("url");
-const writeRepository = new WriteRepositoryImpl<Url>("url");
-const repository = new UrlRepositoryImpl(readRepository, writeRepository);
+const repository = new UrlRepositoryImpl(prisma);
 
 const codeGenerator = new ShortCodeGenerator();
 const retry = new RetryImpl();

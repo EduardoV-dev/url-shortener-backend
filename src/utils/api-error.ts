@@ -1,13 +1,18 @@
 import { HTTP_STATUS } from "@/constants/common";
 
+const NAME = "ApiError";
+const DEFAULT_CODE = "API_ERROR";
+
 export class ApiError extends Error {
   public details: unknown = null;
   public status: number = HTTP_STATUS.INTERNAL_SERVER_ERROR;
   public timestamp: Date = new Date();
+  public code: string;
 
   constructor(message: string) {
     super(message);
-    this.name = "ApiError";
+    this.name = NAME;
+    this.code = DEFAULT_CODE;
 
     Object.setPrototypeOf(this, ApiError.prototype);
     Error.captureStackTrace(this, this.constructor);
@@ -23,8 +28,14 @@ export class ApiError extends Error {
     return this;
   }
 
+  public setCode(code: string): this {
+    this.code = code;
+    return this;
+  }
+
   public toJSON() {
     return {
+      code: this.code,
       details: this.details,
       message: this.message,
       name: this.name,

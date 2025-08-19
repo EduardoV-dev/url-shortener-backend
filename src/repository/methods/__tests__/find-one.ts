@@ -2,13 +2,13 @@ import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { Url } from "@/generated/prisma";
 import { prismaMock } from "@/test/prisma-mock";
 
-import { FindOne, FindOneImpl } from "../../read-repository/find-one";
+import { FindOne, FindOneImpl } from "../../methods/find-one";
 
 describe("ReadRepository | FindOne", () => {
   let findOne: FindOne<Url>;
 
   beforeEach(() => {
-    findOne = new FindOneImpl<Url>("url");
+    findOne = new FindOneImpl<Url>(prismaMock.url);
   });
 
   it("Should create a FindOne instance", () => {

@@ -1,5 +1,5 @@
-import { ModelName } from "../base-repository";
-import { BaseFind, BaseFindImpl } from "./base-find";
+import { BaseFind, BaseFindImpl } from "../bases/base-find";
+import { Model } from "../bases/prisma-model";
 
 export interface FindOne<T> extends BaseFind<T> {
   /**
@@ -13,8 +13,8 @@ export interface FindOne<T> extends BaseFind<T> {
 }
 
 export class FindOneImpl<T> extends BaseFindImpl<T> implements FindOne<T> {
-  constructor(modelName: ModelName) {
-    super(modelName);
+  constructor(model: Model) {
+    super(model);
   }
 
   private get findOneArgs() {
@@ -32,7 +32,7 @@ export class FindOneImpl<T> extends BaseFindImpl<T> implements FindOne<T> {
   }
 
   public execute: FindOne<T>["execute"] = () => {
-    const response = this.modelDelegate.findUnique(this.findOneArgs);
+    const response = this.model.findUnique(this.findOneArgs);
     this.clearConfig();
     return response;
   };

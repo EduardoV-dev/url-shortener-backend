@@ -1,6 +1,5 @@
-import { User } from "@/generated/prisma";
-
-import { ReadRepository, Repository, RepositoryImpl, WriteRepository } from "../../repositories";
+import { PrismaClient, User } from "@/generated/prisma";
+import { Repository, RepositoryImpl } from "@/repository";
 
 export type UserRepository = Repository<User>;
 
@@ -10,8 +9,8 @@ export type UserRepository = Repository<User>;
  * @implements UserRepository
  * @class UserRepositoryImpl
  */
-export class UserRepositoryImpl extends RepositoryImpl<User> {
-  constructor(read: ReadRepository<User>, write: WriteRepository<User>) {
-    super(read, write);
+export class UserRepositoryImpl extends RepositoryImpl<User> implements UserRepository {
+  constructor(prisma: PrismaClient) {
+    super(prisma.user);
   }
 }

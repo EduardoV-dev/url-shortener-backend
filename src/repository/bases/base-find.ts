@@ -1,17 +1,21 @@
-import { BaseRepositoryImpl, ModelName, Where } from "../base-repository";
-import { Nullable, Select } from "./index";
+import { Model, PrismaModel, Where } from "./prisma-model";
+
+export type SortOrder = "asc" | "desc";
+export type Nullable<T> = T | null;
+export type Select<T> = Partial<Record<keyof T, boolean>>;
+export type OrderBy<T> = Partial<Record<keyof T, SortOrder>>;
 
 export interface BaseFind<T> {
   setSelect(select: Select<T>): this;
   setWhere(where: Where<T>): this;
 }
 
-export abstract class BaseFindImpl<T> extends BaseRepositoryImpl implements BaseFind<T> {
+export abstract class BaseFindImpl<T> extends PrismaModel implements BaseFind<T> {
   protected where: Nullable<Where<T>>;
   protected select: Nullable<Select<T>>;
 
-  constructor(modelName: ModelName) {
-    super(modelName);
+  constructor(model: Model) {
+    super(model);
 
     this.where = null;
     this.select = null;

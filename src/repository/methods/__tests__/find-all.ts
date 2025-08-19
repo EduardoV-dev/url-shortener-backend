@@ -1,21 +1,16 @@
 import { MOCK_URLS } from "@/api/v1/test/links.mocks";
 import { Url } from "@/generated/prisma";
+import { FIND_ALL_DEFAULTS, OrderBy, PaginationResponseMeta, Select } from "@/repository";
 import { prismaMock } from "@/test/prisma-mock";
 
-import { Where } from "../../base-repository";
-import { OrderBy, Select } from "../../read-repository";
-import {
-  DEFAULTS_FIND_ALL,
-  FindAll,
-  FindAllImpl,
-  PaginationResponseMeta,
-} from "../../read-repository/find-all";
+import { Where } from "../../bases/prisma-model";
+import { FindAll, FindAllImpl } from "../../methods/find-all";
 
-describe("ReadRepository | FindAll", () => {
+describe("Methods | FindAll", () => {
   let findAll: FindAll<Url>;
 
   beforeEach(() => {
-    findAll = new FindAllImpl<Url>("url");
+    findAll = new FindAllImpl<Url>(prismaMock.url);
   });
 
   describe("Without pagination", () => {
@@ -110,19 +105,34 @@ describe("ReadRepository | FindAll", () => {
       });
     });
 
+    it("Gets different results count based on where clause", async () => {
+      const results = mockUrls.filter((url: Url) => url.userId === "user1");
+
+      prismaMock.url.findMany.mockResolvedValueOnce(mockUrls).mockResolvedValueOnce(results);
+      prismaMock.url.count
+        .mockResolvedValueOnce(mockUrls.length)
+        .mockResolvedValueOnce(results.length);
+
+      const firstResponse = await findAll.setPaginated().execute();
+      const secondResponse = await findAll.setPaginated().setWhere({ userId: "user1" }).execute();
+
+      expect(firstResponse.meta?.totalItems).toBe(mockUrls.length);
+      expect(secondResponse.meta?.totalItems).toBe(results.length);
+    });
+
     it("Should return paginated results with meta data (default page, pageSize)", async () => {
-      const results = mockUrls.slice(
-        (DEFAULTS_FIND_ALL.PAGE - 1) * DEFAULTS_FIND_ALL.PAGE,
-        DEFAULTS_FIND_ALL.PAGE_SIZE,
-      );
+      const page = FIND_ALL_DEFAULTS.page;
+      const pageSize = FIND_ALL_DEFAULTS.pageSize;
+
+      const results = mockUrls.slice((page - 1) * page, pageSize);
       prismaMock.url.findMany.mockResolvedValue(results);
       const response = await findAll.setPaginated().execute();
 
       expect(response.meta).toEqual({
         totalItems: mockUrls.length,
         page: 1,
-        pageSize: DEFAULTS_FIND_ALL.PAGE_SIZE,
-        totalPages: Math.ceil(mockUrls.length / DEFAULTS_FIND_ALL.PAGE_SIZE),
+        pageSize: pageSize,
+        totalPages: Math.ceil(mockUrls.length / pageSize),
         hasPrevPage: false,
         hasNextPage: true,
       } as PaginationResponseMeta);
