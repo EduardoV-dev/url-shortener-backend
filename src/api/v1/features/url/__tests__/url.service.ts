@@ -1,13 +1,15 @@
-import { PaginationResponse } from "@/api/v1/repositories";
 import { MOCK_URL, MOCK_URLS } from "@/api/v1/test/links.mocks";
 import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
 import { Url } from "@/generated/prisma";
+import { executeFindAllWithParams, PaginationResponse } from "@/repository";
 import { MOCK_PRISMA_ERRORS, MockInterface } from "@/test/mocks";
 import { logger } from "@/utils/logger";
 import { Retry, RetryImpl } from "@/utils/retry";
 
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "../short-code-generator";
 import { UrlService, UrlServiceImpl } from "../url.service";
+
+jest.mock("@/repository");
 
 describe("UrlService", () => {
   let service: UrlServiceImpl;
@@ -45,7 +47,7 @@ describe("UrlService", () => {
       jest.clearAllMocks();
 
       mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
-      mockRepository.write.create.mockResolvedValue(mockCreatedUrl);
+      mockRepository.create.mockResolvedValue(mockCreatedUrl);
     });
 
     it("Generates short codes correctly", () => {
@@ -61,8 +63,8 @@ describe("UrlService", () => {
     it("Should create an URL anonymously", async () => {
       const response = await service.createShortUrl(paramUrl);
 
-      expect(mockRepository.write.create).toHaveBeenCalledTimes(1);
-      expect(mockRepository.write.create).toHaveBeenCalledWith({
+      expect(mockRepository.create).toHaveBeenCalledTimes(1);
+      expect(mockRepository.create).toHaveBeenCalledWith({
         shortId: mockGeneratedCode,
         longUrl: paramUrl,
         userId: undefined,
@@ -76,11 +78,11 @@ describe("UrlService", () => {
         ...mockCreatedUrl,
         userId: paramId,
       };
-      mockRepository.write.create.mockResolvedValue(createdUrl);
+      mockRepository.create.mockResolvedValue(createdUrl);
 
       const response = await service.createShortUrl(paramUrl, paramId);
-      expect(mockRepository.write.create).toHaveBeenCalledTimes(1);
-      expect(mockRepository.write.create).toHaveBeenCalledWith({
+      expect(mockRepository.create).toHaveBeenCalledTimes(1);
+      expect(mockRepository.create).toHaveBeenCalledWith({
         shortId: mockGeneratedCode,
         longUrl: paramUrl,
         userId: paramId,
@@ -100,44 +102,44 @@ describe("UrlService", () => {
 
       mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
 
-      mockRepository.write.create
+      mockRepository.create
         .mockRejectedValueOnce(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED)
         .mockResolvedValueOnce(mockCreatedUrl);
 
       const response = await service.createShortUrl(paramUrl);
 
       expect(response).toEqual(mockCreatedUrl);
-      expect(mockRepository.write.create).toHaveBeenCalledTimes(ATTEMPTS);
+      expect(mockRepository.create).toHaveBeenCalledTimes(ATTEMPTS);
       expect(logger.warn).toHaveBeenCalledTimes(ATTEMPTS - 1);
     });
   });
 
   describe("find", () => {
     it("Should find a single url with the unique shortId", async () => {
-      mockRepository.read.findOne().setWhere({ shortId: MOCK_URL.shortId }).execute = jest
+      mockRepository.findOne().setWhere({ shortId: MOCK_URL.shortId }).execute = jest
         .fn()
         .mockResolvedValue(MOCK_URL);
 
       const response = await service.find(MOCK_URL.shortId);
 
-      expect(mockRepository.read.findOne().setWhere).toHaveBeenCalledWith({
+      expect(mockRepository.findOne().setWhere).toHaveBeenCalledWith({
         shortId: MOCK_URL.shortId,
       });
-      expect(mockRepository.read.findOne().execute).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findOne().execute).toHaveBeenCalledTimes(1);
       expect(response).toEqual(MOCK_URL);
     });
 
     it("Should return null if no URL is found with the given shortId", async () => {
-      mockRepository.read.findOne().setWhere({ shortId: "nonexistant" }).execute = jest
+      mockRepository.findOne().setWhere({ shortId: "nonexistant" }).execute = jest
         .fn()
         .mockResolvedValue(null);
 
       const response = await service.find("nonexistant");
 
-      expect(mockRepository.read.findOne().setWhere).toHaveBeenCalledWith({
+      expect(mockRepository.findOne().setWhere).toHaveBeenCalledWith({
         shortId: "nonexistant",
       });
-      expect(mockRepository.read.findOne().execute).toHaveBeenCalledTimes(1);
+      expect(mockRepository.findOne().execute).toHaveBeenCalledTimes(1);
       expect(response).toBeNull();
     });
   });
@@ -157,25 +159,16 @@ describe("UrlService", () => {
       },
     };
 
-    // it("Uses default pagination values if not provided", async () => {
-    //   mockRepository.read.findAll = jest.fn().mockResolvedValue(mockResponse);
-    //
-    //   const response = await service.findByUserId({ userId: MOCK_URL.userId. });
-    //   expect(response.meta!.page).toBe(PAGINATION_DEFAULTS.page);
-    //   expect(response.meta!.pageSize).toBe(PAGINATION_DEFAULTS.pageSize);
-    // });
-    //
-    // it("Should find all URLs for a given userId", async () => {
-    //   mockRepository.read.findAll = jest.fn().mockResolvedValue(mockResponse);
-    //
-    //   const response = await service.findByUserId({
-    //     userId: MOCK_URL.userId!,
-    //     page: 1,
-    //     pageSize: 10,
-    //   });
-    //
-    //   expect(response).toEqual(mockResponse);
-    // });
+    it("Logs the action of getting URLs by userId", async () => {
+      await service.findByUserId({ userId: MOCK_URL.userId! });
+      expect(logger.info).toHaveBeenCalled();
+    });
+
+    it("Gets paginated urls from a user by userId", async () => {
+      (executeFindAllWithParams as jest.Mock).mockResolvedValue(mockResponse);
+      const response = await service.findByUserId({ userId: MOCK_URL.userId! });
+      expect(response).toEqual(mockResponse);
+    });
   });
 });
 

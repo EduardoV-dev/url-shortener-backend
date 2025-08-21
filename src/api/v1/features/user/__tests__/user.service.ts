@@ -31,7 +31,7 @@ describe("UserService", () => {
     };
 
     it("Creates a new user successfully", async () => {
-      repository.write.create.mockResolvedValue(createdUser);
+      repository.create.mockResolvedValue(createdUser);
       const response = await service.create(params);
       expect(response).toEqual(createdUser);
     });
@@ -39,7 +39,7 @@ describe("UserService", () => {
 
   describe("findByEmail", () => {
     it("Should return user by email", async () => {
-      repository.read.findOne().setWhere({ email: MOCK_USER.email }).execute = jest
+      repository.findOne().setWhere({ email: MOCK_USER.email }).execute = jest
         .fn()
         .mockResolvedValue(MOCK_USER);
 

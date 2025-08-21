@@ -1,9 +1,9 @@
 import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
+import { FindAllQueryParams } from "@/repository";
 import { ApiError } from "@/utils/api-error";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
-import { PaginationQueryParams } from "../../repositories";
 import { UrlService } from "./url.service";
 
 interface UrlController {
@@ -18,7 +18,7 @@ interface UrlController {
   /**
    * Retrieves all URLs associated with a specific user ID.
    */
-  getUrlsByUserId: ControllerMethod<unknown, unknown, PaginationQueryParams>;
+  getUrlsByUserId: ControllerMethod<unknown, unknown, FindAllQueryParams>;
 }
 
 export class UrlControllerImpl implements UrlController {
@@ -51,17 +51,9 @@ export class UrlControllerImpl implements UrlController {
 
   public getUrlsByUserId: UrlController["getUrlsByUserId"] = async (req, res, next) => {
     try {
-      const { page, pageSize, sortBy, sortOrder }: PaginationQueryParams =
-        req.query as PaginationQueryParams;
-
       const urls = await this.service.findByUserId({
         userId: req.userId!,
-        pagination: {
-          page,
-          pageSize,
-          sortBy,
-          sortOrder,
-        },
+        ...req.query,
       });
 
       res

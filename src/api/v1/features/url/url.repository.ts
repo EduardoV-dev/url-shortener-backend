@@ -1,6 +1,5 @@
-import { Url } from "@/generated/prisma";
-
-import { ReadRepository, Repository, RepositoryImpl, WriteRepository } from "../../repositories";
+import { PrismaClient, Url } from "@/generated/prisma";
+import { Repository, RepositoryImpl } from "@/repository";
 
 /**
  * Parameters required to create a new shortened URL.
@@ -18,8 +17,8 @@ export type UrlRepository = Repository<Url>;
  * This class extends the Repository class to provide methods for URL shortening operations.
  * It uses the Prisma ORM to interact with the database.
  */
-export class UrlRepositoryImpl extends RepositoryImpl<Url> {
-  constructor(read: ReadRepository<Url>, write: WriteRepository<Url>) {
-    super(read, write);
+export class UrlRepositoryImpl extends RepositoryImpl<Url> implements UrlRepository {
+  constructor(prisma: PrismaClient) {
+    super(prisma.url);
   }
 }

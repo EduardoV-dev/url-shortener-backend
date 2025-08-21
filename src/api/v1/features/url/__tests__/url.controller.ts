@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
+import { FindAllQueryParams } from "@/repository";
 import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
@@ -82,7 +83,7 @@ describe("UrlController", () => {
       const req = {
         userId: "valid-user-id",
         query: { page: "1", pageSize: "10" },
-      } as Request<unknown, unknown, unknown, { page?: string; pageSize?: string }>;
+      } as unknown as Request<unknown, unknown, unknown, FindAllQueryParams>;
 
       const mockUrls = [MOCK_URL];
       const mockServiceResult = {
@@ -108,6 +109,20 @@ describe("UrlController", () => {
           data: mockServiceResult,
         }),
       );
+    });
+
+    it("Should call next with the error in case an error appears", async () => {
+      const req = {
+        userId: "valid-user-id",
+      } as Request;
+
+      mockService.findByUserId.mockRejectedValue(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
+
+      await controller.getUrlsByUserId(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
+      expect(res.status).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
     });
   });
 });

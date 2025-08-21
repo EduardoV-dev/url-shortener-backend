@@ -1,14 +1,9 @@
-import { ModelName, Where } from "../base-repository";
-import { BaseFind, BaseFindImpl } from "./base-find";
-import { Nullable, OrderBy, Select, SortOrder } from "./index";
+import { ApiError } from "@/utils/api-error";
 
-interface FindAllArgs<T> {
-  orderBy?: Nullable<OrderBy<T>>;
-  select?: Nullable<Select<T>>;
-  skip?: number;
-  take?: number;
-  where?: Nullable<Where<T>>;
-}
+import { BaseFind, BaseFindImpl, Nullable, OrderBy, Select } from "../bases/base-find";
+import { Model, Where } from "../bases/prisma-model";
+import { PaginationResponse } from "../types/pagination";
+import { FIND_ALL_DEFAULTS } from "../utils/pagination";
 
 export interface FindAll<T> extends BaseFind<T> {
   /**
@@ -51,18 +46,30 @@ export interface FindAll<T> extends BaseFind<T> {
   setPageSize(pageSize: number): this;
 }
 
+export const FIND_ALL_ERROR_CODES = {
+  VALIDATION: "FIND_ALL_VALIDATION_ERROR",
+};
+
+interface FindAllArgs<T> {
+  orderBy?: Nullable<OrderBy<T>>;
+  select?: Nullable<Select<T>>;
+  skip?: number;
+  take?: number;
+  where?: Nullable<Where<T>>;
+}
+
 export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
   protected orderBy: Nullable<OrderBy<T>>;
   protected paginated: boolean;
   protected page: number;
   protected pageSize: number;
 
-  constructor(modelName: ModelName) {
-    super(modelName);
+  constructor(model: Model) {
+    super(model);
 
     this.orderBy = null;
-    this.page = DEFAULTS_FIND_ALL.PAGE;
-    this.pageSize = DEFAULTS_FIND_ALL.PAGE_SIZE;
+    this.page = FIND_ALL_DEFAULTS.page;
+    this.pageSize = FIND_ALL_DEFAULTS.pageSize;
     this.paginated = false;
   }
 
@@ -73,7 +80,10 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   public setPage(page: number): this {
     this.onPaginationConfig();
-    if (page < 0) throw new Error("Page must be a non-negative integer");
+    if (page < 0)
+      throw new ApiError("Page must be a non-negative integer").setCode(
+        FIND_ALL_ERROR_CODES.VALIDATION,
+      );
 
     this.page = page;
     return this;
@@ -81,8 +91,10 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   public setPageSize(pageSize: number): this {
     this.onPaginationConfig();
-
-    if (pageSize <= 0) throw new Error("Page size must be a positive integer and greater than 0");
+    if (pageSize <= 0)
+      throw new ApiError("Page size must be a positive integer and greater than 0").setCode(
+        FIND_ALL_ERROR_CODES.VALIDATION,
+      );
 
     this.pageSize = pageSize;
     return this;
@@ -103,7 +115,7 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
   };
 
   private findAllResults = async (): Promise<PaginationResponse<T>> => {
-    const results = await this.modelDelegate.findMany(this.findArgs);
+    const results = await this.model.findMany(this.findArgs);
 
     return {
       results,
@@ -113,11 +125,21 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   private findAllPaginatedResults = async (): Promise<PaginationResponse<T>> => {
     const [results, count] = await Promise.all<[T[], number]>([
-      this.modelDelegate.findMany({ ...this.findArgs }),
-      this.modelDelegate.count({
+      this.model.findMany(this.findArgs),
+      this.model.count({
         ...(this.findArgs.where && { where: this.findArgs.where }),
       }),
     ]);
+
+    const totalPages = Math.ceil(count / this.pageSize);
+
+    if (this.page > totalPages)
+      throw new ApiError("Page exceeds total pages")
+        .setCode(FIND_ALL_ERROR_CODES.VALIDATION)
+        .setDetails({
+          page: this.page,
+          totalPages,
+        });
 
     return {
       results,
@@ -125,7 +147,7 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
         totalItems: count,
         page: this.page,
         pageSize: this.pageSize,
-        totalPages: Math.ceil(count / this.pageSize),
+        totalPages,
         hasPrevPage: this.page > 1,
         hasNextPage: this.page * this.pageSize < count,
       },
@@ -134,8 +156,8 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   private clearFindArgs(): void {
     this.orderBy = null;
-    this.page = DEFAULTS_FIND_ALL.PAGE;
-    this.pageSize = DEFAULTS_FIND_ALL.PAGE_SIZE;
+    this.page = FIND_ALL_DEFAULTS.page;
+    this.pageSize = FIND_ALL_DEFAULTS.pageSize;
     this.paginated = false;
     this.select = null;
     this.where = null;
@@ -155,50 +177,8 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   private onPaginationConfig() {
     if (!this.paginated)
-      throw new Error("Pagination is not set. Use setPaginated() to enable pagination.");
+      throw new ApiError("Pagination is not set. Use setPaginated() to enable pagination.").setCode(
+        FIND_ALL_ERROR_CODES.VALIDATION,
+      );
   }
-}
-
-export const DEFAULTS_FIND_ALL = Object.freeze({
-  PAGE: 1,
-  PAGE_SIZE: 30,
-});
-
-export interface PaginationParams {
-  /**
-   * The current page number for pagination.
-   * @remarks This is used to determine which set of records to return based on the page size.
-   */
-  page: number;
-  /**
-   * The number of records to return per page.
-   * @remarks This is used to limit the number of records returned in a single response.
-   */
-  pageSize: number;
-}
-
-export interface PaginationResponseMeta extends PaginationParams {
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-  totalItems: number;
-  totalPages: number;
-}
-
-export interface PaginationResponse<T> {
-  /**
-   * The array of records for the current page.
-   * @remarks This contains the actual data returned for the current page of results.
-   * It may be an empty array if there are no records for the current page.
-   */
-  results: T[];
-  /**
-   * Metadata about the pagination response.
-   * @remarks This includes information such as the current page, total items, total pages.
-   */
-  meta: PaginationResponseMeta | null;
-}
-
-export interface PaginationQueryParams extends Partial<Record<keyof PaginationParams, string>> {
-  sortBy?: string;
-  sortOrder?: SortOrder;
 }

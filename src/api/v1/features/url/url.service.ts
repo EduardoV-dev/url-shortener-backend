@@ -1,25 +1,13 @@
 import { Url } from "@/generated/prisma";
+import { executeFindAllWithParams, PaginationResponse, WithFindAllQueryParams } from "@/repository";
 import { logger } from "@/utils/logger";
 import { Retry } from "@/utils/retry";
 
-import { PaginationQueryParams, PaginationResponse } from "../../repositories";
 import { PrismaErrorHandlerImpl } from "../../utils/prisma-error-handler";
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "./short-code-generator";
 import { UrlRepository } from "./url.repository";
 
-export interface FindUrlsByUserIdParams {
-  /**
-   * The user ID whose URLs are to be retrieved.
-   * This is used to filter URLs associated with a specific user.
-   */
-  userId: string;
-  /**
-   * Pagination parameters for retrieving URLs.
-   * This includes page number, page size, and optional sorting parameters.
-   * @remarks This allows for efficient retrieval of URLs in a paginated manner.
-   */
-  pagination: PaginationQueryParams;
-}
+export type FindUrlsByUserIdParams = WithFindAllQueryParams<{ userId: string }>;
 
 /**
  * Service interface for URL shortener business logic.
@@ -94,21 +82,20 @@ export class UrlServiceImpl implements UrlService {
         MAX_CODE_LENGTH,
       );
 
-      return await this.repository.write.create({ shortId, longUrl: url, userId });
+      return await this.repository.create({ shortId, longUrl: url, userId });
     });
   };
 
   public find: UrlService["find"] = async (shortId) => {
     logger.info(`Finding URL with shortId: ${shortId}`);
 
-    const url: Url | null = await this.repository.read.findOne().setWhere({ shortId }).execute();
+    const url: Url | null = await this.repository.findOne().setWhere({ shortId }).execute();
     return url;
   };
 
-  // TODO: Implement pagination utils for this method
-  public findByUserId: UrlService["findByUserId"] = async ({ userId, pagination }) => {
+  public findByUserId: UrlService["findByUserId"] = async ({ userId, ...pagination }) => {
     logger.info(`Finding URLs for userId: ${userId}`);
 
-    return await this.repository.read.findAll().setPaginated().setWhere({ userId }).execute();
+    return executeFindAllWithParams(pagination, this.repository.findAll().setWhere({ userId }));
   };
 }

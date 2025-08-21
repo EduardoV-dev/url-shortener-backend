@@ -5,7 +5,6 @@ import { HTTP_STATUS } from "@/constants/common";
 import { createTestServer, type Response } from "@/test/test-server";
 
 import routes from "../url.routes";
-import { FindUrlsByUserIdParams } from "../url.service";
 
 const request = createTestServer(routes);
 

@@ -40,11 +40,11 @@ export class UserServiceImpl implements UserService {
   public create: UserService["create"] = async ({ email, password }) => {
     logger.info(`Creating user with email: ${email}`);
     const hashed = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
-    return await this.repository.write.create({ email, password: hashed });
+    return this.repository.create({ email, password: hashed });
   };
 
-  public findByEmail: UserService["findByEmail"] = async (email) => {
-    logger.info("Retrieving user by email:", email);
-    return await this.repository.read.findOne().setWhere({ email }).execute();
+  public findByEmail: UserService["findByEmail"] = (email) => {
+    logger.info(`Retrieving user for email: ${email}`);
+    return this.repository.findOne().setWhere({ email }).execute();
   };
 }

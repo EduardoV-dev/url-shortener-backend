@@ -1,22 +1,23 @@
 import { MOCK_URLS } from "@/api/v1/test/links.mocks";
 import { Url } from "@/generated/prisma";
+import { FIND_ALL_DEFAULTS, OrderBy, PaginationResponseMeta, Select } from "@/repository";
 import { prismaMock } from "@/test/prisma-mock";
+import { ApiError } from "@/utils/api-error";
 
-import { Where } from "../../base-repository";
-import { OrderBy, Select } from "../../read-repository";
-import {
-  DEFAULTS_FIND_ALL,
-  FindAll,
-  FindAllImpl,
-  PaginationResponseMeta,
-} from "../../read-repository/find-all";
+import { Where } from "../../bases/prisma-model";
+import { FIND_ALL_ERROR_CODES, FindAll, FindAllImpl } from "../../methods/find-all";
 
-describe("ReadRepository | FindAll", () => {
+describe("Methods | FindAll", () => {
   let findAll: FindAll<Url>;
 
   beforeEach(() => {
-    findAll = new FindAllImpl<Url>("url");
+    findAll = new FindAllImpl<Url>(prismaMock.url);
   });
+
+  const onValidationError = (error: unknown) => {
+    const err = error as ApiError;
+    expect(err.code).toBe(FIND_ALL_ERROR_CODES.VALIDATION);
+  };
 
   describe("Without pagination", () => {
     it("Should not return meta data when pagination is not enabled", async () => {
@@ -73,13 +74,12 @@ describe("ReadRepository | FindAll", () => {
       prismaMock.url.count.mockResolvedValue(mockUrls.length);
     });
 
-    // TODO: Improve the error test to handle an specific error, make ApiError to contain code again to do this
     describe("setPage", () => {
-      it("Should throw an error if pageSize is below 0", async () => {
+      it("Should throw an error if page is below 0", async () => {
         try {
           await findAll.setPaginated().setPage(-1).execute();
-        } catch (error) {
-          expect(error).toBeInstanceOf(Error);
+        } catch (err) {
+          onValidationError(err);
         }
       });
 
@@ -87,7 +87,7 @@ describe("ReadRepository | FindAll", () => {
         try {
           await findAll.setPage(1).execute();
         } catch (error) {
-          expect(error).toBeInstanceOf(Error);
+          onValidationError(error);
         }
       });
     });
@@ -97,7 +97,7 @@ describe("ReadRepository | FindAll", () => {
         try {
           await findAll.setPaginated().setPageSize(-1).execute();
         } catch (error) {
-          expect(error).toBeInstanceOf(Error);
+          onValidationError(error);
         }
       });
 
@@ -105,24 +105,39 @@ describe("ReadRepository | FindAll", () => {
         try {
           await findAll.setPageSize(10).execute();
         } catch (error) {
-          expect(error).toBeInstanceOf(Error);
+          onValidationError(error);
         }
       });
     });
 
+    it("Gets different results count based on where clause", async () => {
+      const results = mockUrls.filter((url: Url) => url.userId === "user1");
+
+      prismaMock.url.findMany.mockResolvedValueOnce(mockUrls).mockResolvedValueOnce(results);
+      prismaMock.url.count
+        .mockResolvedValueOnce(mockUrls.length)
+        .mockResolvedValueOnce(results.length);
+
+      const firstResponse = await findAll.setPaginated().execute();
+      const secondResponse = await findAll.setPaginated().setWhere({ userId: "user1" }).execute();
+
+      expect(firstResponse.meta?.totalItems).toBe(mockUrls.length);
+      expect(secondResponse.meta?.totalItems).toBe(results.length);
+    });
+
     it("Should return paginated results with meta data (default page, pageSize)", async () => {
-      const results = mockUrls.slice(
-        (DEFAULTS_FIND_ALL.PAGE - 1) * DEFAULTS_FIND_ALL.PAGE,
-        DEFAULTS_FIND_ALL.PAGE_SIZE,
-      );
+      const page = FIND_ALL_DEFAULTS.page;
+      const pageSize = FIND_ALL_DEFAULTS.pageSize;
+
+      const results = mockUrls.slice((page - 1) * page, pageSize);
       prismaMock.url.findMany.mockResolvedValue(results);
       const response = await findAll.setPaginated().execute();
 
       expect(response.meta).toEqual({
         totalItems: mockUrls.length,
         page: 1,
-        pageSize: DEFAULTS_FIND_ALL.PAGE_SIZE,
-        totalPages: Math.ceil(mockUrls.length / DEFAULTS_FIND_ALL.PAGE_SIZE),
+        pageSize: pageSize,
+        totalPages: Math.ceil(mockUrls.length / pageSize),
         hasPrevPage: false,
         hasNextPage: true,
       } as PaginationResponseMeta);
@@ -151,5 +166,19 @@ describe("ReadRepository | FindAll", () => {
       } as PaginationResponseMeta);
       expect(response.results).toEqual(results);
     });
+  });
+
+  it("Throws an error if page exceeds total pages", async () => {
+    const page = 6;
+    const pageSize = 20;
+
+    // page * pageSize = 6, totalPages would be 5 for 100 items, making this invalid and into the catch block
+    prismaMock.url.count.mockResolvedValue(100);
+
+    try {
+      await findAll.setPaginated().setPage(page).setPageSize(pageSize).execute();
+    } catch (error) {
+      onValidationError(error);
+    }
   });
 });
