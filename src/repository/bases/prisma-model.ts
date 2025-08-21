@@ -22,5 +22,5 @@ export abstract class PrismaModel {
    * Prisma model used for database operations.
    * This should be defined in subclasses to specify the model being managed.
    */
-  constructor(protected readonly model: any) {}
+  constructor(protected readonly model: Model) {}
 }

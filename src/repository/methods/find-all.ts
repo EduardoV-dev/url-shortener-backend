@@ -1,3 +1,5 @@
+import { ApiError } from "@/utils/api-error";
+
 import { BaseFind, BaseFindImpl, Nullable, OrderBy, Select } from "../bases/base-find";
 import { Model, Where } from "../bases/prisma-model";
 import { PaginationResponse } from "../types/pagination";
@@ -44,6 +46,10 @@ export interface FindAll<T> extends BaseFind<T> {
   setPageSize(pageSize: number): this;
 }
 
+export const FIND_ALL_ERROR_CODES = {
+  VALIDATION: "FIND_ALL_VALIDATION_ERROR",
+};
+
 interface FindAllArgs<T> {
   orderBy?: Nullable<OrderBy<T>>;
   select?: Nullable<Select<T>>;
@@ -74,7 +80,10 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   public setPage(page: number): this {
     this.onPaginationConfig();
-    if (page < 0) throw new Error("Page must be a non-negative integer");
+    if (page < 0)
+      throw new ApiError("Page must be a non-negative integer").setCode(
+        FIND_ALL_ERROR_CODES.VALIDATION,
+      );
 
     this.page = page;
     return this;
@@ -82,8 +91,10 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   public setPageSize(pageSize: number): this {
     this.onPaginationConfig();
-
-    if (pageSize <= 0) throw new Error("Page size must be a positive integer and greater than 0");
+    if (pageSize <= 0)
+      throw new ApiError("Page size must be a positive integer and greater than 0").setCode(
+        FIND_ALL_ERROR_CODES.VALIDATION,
+      );
 
     this.pageSize = pageSize;
     return this;
@@ -120,13 +131,23 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
       }),
     ]);
 
+    const totalPages = Math.ceil(count / this.pageSize);
+
+    if (this.page > totalPages)
+      throw new ApiError("Page exceeds total pages")
+        .setCode(FIND_ALL_ERROR_CODES.VALIDATION)
+        .setDetails({
+          page: this.page,
+          totalPages,
+        });
+
     return {
       results,
       meta: {
         totalItems: count,
         page: this.page,
         pageSize: this.pageSize,
-        totalPages: Math.ceil(count / this.pageSize),
+        totalPages,
         hasPrevPage: this.page > 1,
         hasNextPage: this.page * this.pageSize < count,
       },
@@ -156,6 +177,8 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   private onPaginationConfig() {
     if (!this.paginated)
-      throw new Error("Pagination is not set. Use setPaginated() to enable pagination.");
+      throw new ApiError("Pagination is not set. Use setPaginated() to enable pagination.").setCode(
+        FIND_ALL_ERROR_CODES.VALIDATION,
+      );
   }
 }

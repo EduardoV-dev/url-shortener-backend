@@ -67,12 +67,12 @@ export const parseFindAllQueryParams = <T>({
     );
 
   if ((!sortBy && sortOrder) || (sortBy && !sortOrder))
-    throw new ApiError("Both sortBy and sortOrder must be provided together or not at all").setCode(
-      ERROR_CODES.SORT_ORDER.BOTH_REQUIRED,
-    );
+    throw new ApiError(
+      "Both Sort by and Sort order must be provided together or not at all",
+    ).setCode(ERROR_CODES.SORT_ORDER.BOTH_REQUIRED);
 
   return {
-    orderBy: { ...(sortBy && sortOrder && ({ [sortBy]: sortOrder } as OrderBy<T>)) },
+    orderBy: sortBy && sortOrder ? ({ [sortBy]: sortOrder } as OrderBy<T>) : {},
     page: Number(page || FIND_ALL_DEFAULTS.page),
     pageSize: Number(pageSize || FIND_ALL_DEFAULTS.pageSize),
   };

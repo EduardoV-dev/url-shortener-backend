@@ -5,7 +5,7 @@ import { FindAllImpl } from "./methods/find-all";
 import { FindOneImpl } from "./methods/find-one";
 
 describe("Repository", () => {
-  it("should create an instance all methods", () => {
+  it("should create an instance with all methods", () => {
     const repo = new RepositoryImpl(prismaMock.url);
 
     expect(repo).toBeInstanceOf(RepositoryImpl);

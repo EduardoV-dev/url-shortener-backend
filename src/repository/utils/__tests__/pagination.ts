@@ -76,15 +76,13 @@ describe("Pagination utils", () => {
 
     beforeEach(() => {
       prismaMock.url.findMany.mockResolvedValue(
-        new Array(totalItems).fill([
-          {
-            id: "url1",
-            longUrl: "http://example.com",
-            shortId: "exmpl",
-            userId: "user1",
-            createdAt: new Date(),
-          },
-        ]),
+        new Array(totalItems).fill({
+          id: "url1",
+          longUrl: "http://example.com",
+          shortId: "exmpl",
+          userId: "user1",
+          createdAt: new Date(),
+        }),
       );
 
       prismaMock.url.count.mockResolvedValue(totalItems);
