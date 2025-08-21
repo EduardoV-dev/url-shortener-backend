@@ -4,13 +4,14 @@ import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { FindAllQueryParams } from "@/repository";
 import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
+import { ApiError } from "@/utils/api-error";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
-import { UrlControllerImpl } from "../url.controller";
+import { UrlController, UrlControllerImpl } from "../url.controller";
 import { MOCK_SHORTEN_SERVICE, MockUrlService } from "./url.service";
 
 describe("UrlController", () => {
-  let controller: UrlControllerImpl;
+  let controller: UrlController;
   let mockService: MockUrlService;
   let res: jest.Mocked<Response>;
   let next: jest.Mock;
@@ -65,13 +66,13 @@ describe("UrlController", () => {
     } as Request<{ shortId: string }>;
 
     it("Should redirect to the long url correctly", async () => {
-      mockService.find.mockResolvedValue(MOCK_URL);
+      mockService.findOneByShortId.mockResolvedValue(MOCK_URL);
       await controller.redirect(req, res, next);
       expect(res.redirect).toHaveBeenCalledWith(MOCK_URL.longUrl);
     });
 
     it("Should call next with the error in case an error appears", async () => {
-      mockService.find.mockRejectedValue(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
+      mockService.findOneByShortId.mockRejectedValue(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
       await controller.redirect(req, res, next);
       expect(next).toHaveBeenCalledWith(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
       expect(res.redirect).not.toHaveBeenCalled();
@@ -98,7 +99,7 @@ describe("UrlController", () => {
         },
       };
 
-      mockService.findByUserId.mockResolvedValue(mockServiceResult);
+      mockService.findAllByUserId.mockResolvedValue(mockServiceResult);
 
       await controller.getUrlsByUserId(req, res, next);
 
@@ -116,13 +117,49 @@ describe("UrlController", () => {
         userId: "valid-user-id",
       } as Request;
 
-      mockService.findByUserId.mockRejectedValue(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
+      mockService.findAllByUserId.mockRejectedValue(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
 
       await controller.getUrlsByUserId(req, res, next);
 
       expect(next).toHaveBeenCalledWith(MOCK_PRISMA_ERRORS.RECORD_NOT_FOUND);
       expect(res.status).not.toHaveBeenCalled();
       expect(res.json).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("deleteUrl", () => {
+    it("Should call next in case there is an error", async () => {
+      const serviceError = new ApiError("User not found").setStatus(HTTP_STATUS.NOT_FOUND);
+      mockService.deleteOneByShortId.mockRejectedValue(serviceError);
+
+      const req = {
+        userId: "none",
+        params: { shortId: "any-thing" },
+      } as Request<{ shortId: string }>;
+
+      await controller.deleteUrl(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(serviceError);
+      expect(res.status).not.toHaveBeenCalled();
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
+    it("It should delete the url successfully and return the deleted url", async () => {
+      mockService.deleteOneByShortId.mockResolvedValue(MOCK_URL);
+      const req = { userId: MOCK_URL.userId, params: { shortId: MOCK_URL.shortId } } as Request<{
+        shortId: string;
+      }>;
+
+      await controller.deleteUrl(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.OK);
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          data: MOCK_URL,
+        }),
+      );
+      expect(next).not.toHaveBeenCalled();
     });
   });
 });

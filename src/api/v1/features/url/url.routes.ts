@@ -22,6 +22,7 @@ const controller = new UrlControllerImpl(service);
 const router = Router();
 
 router
+  .delete("/:shortId", authenticationMiddleware, controller.deleteUrl)
   .get("", authenticationMiddleware, controller.getUrlsByUserId)
   .get("/redirect/:shortId", controller.redirect)
   .post(
