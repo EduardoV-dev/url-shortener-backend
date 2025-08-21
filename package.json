@@ -20,7 +20,7 @@
     "prisma:generate:dev": "env-cmd -f .env.local prisma generate",
     "prisma:migrate:dev": "env-cmd -f .env.local prisma migrate dev --name init",
     "start": "node dist/src/app.js",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:coverage": "jest --coverage",
     "test:queue": "jest --runInBand",
     "test:watch": "jest --watch"

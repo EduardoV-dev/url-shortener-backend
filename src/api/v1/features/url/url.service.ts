@@ -116,8 +116,6 @@ export class UrlServiceImpl implements UrlService {
     if (!url)
       throw new ApiError(`URL with shortId ${shortId} not found`).setStatus(HTTP_STATUS.NOT_FOUND);
 
-    console.log("userId", userId, url.userId);
-
     if (!url.userId)
       throw new ApiError("Cannot delete an anonymous URL").setStatus(HTTP_STATUS.BAD_REQUEST);
 
