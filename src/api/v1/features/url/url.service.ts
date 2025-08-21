@@ -1,5 +1,7 @@
+import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { executeFindAllWithParams, PaginationResponse, WithFindAllQueryParams } from "@/repository";
+import { ApiError } from "@/utils/api-error";
 import { logger } from "@/utils/logger";
 import { Retry } from "@/utils/retry";
 
@@ -29,13 +31,21 @@ export interface UrlService {
    * @returns The Url object if found.
    * @throws ApiError if the URL is not found.
    */
-  find: (shortId: string) => Promise<Url | null>;
+  findOneByShortId: (shortId: string) => Promise<Url | null>;
   /**
    * Finds all URLs associated with a specific user ID, with pagination support.
    * @param userId - The user ID whose URLs are to be retrieved.
    * @returns A paginated result containing the URLs associated with the user.
    */
-  findByUserId: (params: FindUrlsByUserIdParams) => Promise<PaginationResponse<Url>>;
+  findAllByUserId: (params: FindUrlsByUserIdParams) => Promise<PaginationResponse<Url>>;
+  /**
+   * Deletes a shortened URL by its short ID.
+   * @param shortId - The short ID of the URL to delete.
+   * @param userId - Optional user ID for associating the deletion with a user.
+   * @returns The deleted Url object.
+   * @throws ApiError if the URL is not found or if the user does not have permission to delete it.
+   */
+  deleteOneByShortId: (shortId: string, userId?: string) => Promise<Url>;
 }
 
 interface UrlServiceConstructor {
@@ -86,16 +96,36 @@ export class UrlServiceImpl implements UrlService {
     });
   };
 
-  public find: UrlService["find"] = async (shortId) => {
+  public findOneByShortId: UrlService["findOneByShortId"] = async (shortId) => {
     logger.info(`Finding URL with shortId: ${shortId}`);
 
     const url: Url | null = await this.repository.findOne().setWhere({ shortId }).execute();
     return url;
   };
 
-  public findByUserId: UrlService["findByUserId"] = async ({ userId, ...pagination }) => {
+  public findAllByUserId: UrlService["findAllByUserId"] = async ({ userId, ...pagination }) => {
     logger.info(`Finding URLs for userId: ${userId}`);
 
     return executeFindAllWithParams(pagination, this.repository.findAll().setWhere({ userId }));
+  };
+
+  public deleteOneByShortId: UrlService["deleteOneByShortId"] = async (shortId, userId) => {
+    logger.info(`Deleting URL with shortId: ${shortId}`);
+
+    const url: Url | null = await this.findOneByShortId(shortId);
+    if (!url)
+      throw new ApiError(`URL with shortId ${shortId} not found`).setStatus(HTTP_STATUS.NOT_FOUND);
+
+    console.log("userId", userId, url.userId);
+
+    if (!url.userId)
+      throw new ApiError("Cannot delete an anonymous URL").setStatus(HTTP_STATUS.BAD_REQUEST);
+
+    if (url.userId !== userId)
+      throw new ApiError("You do not have permission to delete this URL").setStatus(
+        HTTP_STATUS.FORBIDDEN,
+      );
+
+    return await this.repository.delete({ shortId });
   };
 }

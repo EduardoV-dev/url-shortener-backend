@@ -6,19 +6,23 @@ import { ApiSuccessResponse } from "@/utils/api-success-response";
 
 import { UrlService } from "./url.service";
 
-interface UrlController {
+export interface UrlController {
   /**
    * Creates a short URL from the provided long URL.
    */
   createUrl: ControllerMethod<unknown, { url: string }>;
   /**
-   * Redirects to the original URL based on the short ID.
+   * Deletes a short URL by its short ID.
    */
-  redirect: ControllerMethod<{ shortId: string }>;
+  deleteUrl: ControllerMethod<{ shortId: string }>;
   /**
    * Retrieves all URLs associated with a specific user ID.
    */
   getUrlsByUserId: ControllerMethod<unknown, unknown, FindAllQueryParams>;
+  /**
+   * Redirects to the original URL based on the short ID.
+   */
+  redirect: ControllerMethod<{ shortId: string }>;
 }
 
 export class UrlControllerImpl implements UrlController {
@@ -40,7 +44,7 @@ export class UrlControllerImpl implements UrlController {
   public redirect: UrlController["redirect"] = async (req, res, next) => {
     try {
       const { shortId } = req.params;
-      const url: Url | null = await this.service.find(shortId);
+      const url: Url | null = await this.service.findOneByShortId(shortId);
 
       if (!url) throw new ApiError("URL not found").setStatus(HTTP_STATUS.NOT_FOUND);
       res.redirect(url.longUrl);
@@ -51,7 +55,7 @@ export class UrlControllerImpl implements UrlController {
 
   public getUrlsByUserId: UrlController["getUrlsByUserId"] = async (req, res, next) => {
     try {
-      const urls = await this.service.findByUserId({
+      const urls = await this.service.findAllByUserId({
         userId: req.userId!,
         ...req.query,
       });
@@ -59,6 +63,18 @@ export class UrlControllerImpl implements UrlController {
       res
         .status(HTTP_STATUS.OK)
         .json(new ApiSuccessResponse("Urls retrieved successfully", urls).toJSON());
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  public deleteUrl: UrlController["deleteUrl"] = async (req, res, next) => {
+    try {
+      const deletedUrl = await this.service.deleteOneByShortId(req.params.shortId, req.userId);
+
+      res
+        .status(HTTP_STATUS.OK)
+        .json(new ApiSuccessResponse("Url deleted successfully", deletedUrl).toJSON());
     } catch (err) {
       next(err);
     }

@@ -1,8 +1,10 @@
 import { MOCK_URL, MOCK_URLS } from "@/api/v1/test/links.mocks";
 import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
+import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { executeFindAllWithParams, PaginationResponse } from "@/repository";
 import { MOCK_PRISMA_ERRORS, MockInterface } from "@/test/mocks";
+import { ApiError } from "@/utils/api-error";
 import { logger } from "@/utils/logger";
 import { Retry, RetryImpl } from "@/utils/retry";
 
@@ -50,67 +52,69 @@ describe("UrlService", () => {
       mockRepository.create.mockResolvedValue(mockCreatedUrl);
     });
 
-    it("Generates short codes correctly", () => {
-      service.createShortUrl(paramUrl);
+    describe("createShortUrl", () => {
+      it("Generates short codes correctly", () => {
+        service.createShortUrl(paramUrl);
 
-      expect(mockCodeGenerator.generateByRange).toHaveBeenCalledTimes(1);
-      expect(mockCodeGenerator.generateByRange).toHaveBeenCalledWith(
-        MIN_CODE_LENGTH,
-        MAX_CODE_LENGTH,
-      );
-    });
-
-    it("Should create an URL anonymously", async () => {
-      const response = await service.createShortUrl(paramUrl);
-
-      expect(mockRepository.create).toHaveBeenCalledTimes(1);
-      expect(mockRepository.create).toHaveBeenCalledWith({
-        shortId: mockGeneratedCode,
-        longUrl: paramUrl,
-        userId: undefined,
+        expect(mockCodeGenerator.generateByRange).toHaveBeenCalledTimes(1);
+        expect(mockCodeGenerator.generateByRange).toHaveBeenCalledWith(
+          MIN_CODE_LENGTH,
+          MAX_CODE_LENGTH,
+        );
       });
 
-      expect(response).toEqual(mockCreatedUrl);
-    });
+      it("Should create an URL anonymously", async () => {
+        const response = await service.createShortUrl(paramUrl);
 
-    it("Creates a short URL with userId if provided", async () => {
-      const createdUrl: Url = {
-        ...mockCreatedUrl,
-        userId: paramId,
-      };
-      mockRepository.create.mockResolvedValue(createdUrl);
+        expect(mockRepository.create).toHaveBeenCalledTimes(1);
+        expect(mockRepository.create).toHaveBeenCalledWith({
+          shortId: mockGeneratedCode,
+          longUrl: paramUrl,
+          userId: undefined,
+        });
 
-      const response = await service.createShortUrl(paramUrl, paramId);
-      expect(mockRepository.create).toHaveBeenCalledTimes(1);
-      expect(mockRepository.create).toHaveBeenCalledWith({
-        shortId: mockGeneratedCode,
-        longUrl: paramUrl,
-        userId: paramId,
+        expect(response).toEqual(mockCreatedUrl);
       });
 
-      expect(response).toEqual(createdUrl);
-    });
+      it("Creates a short URL with userId if provided", async () => {
+        const createdUrl: Url = {
+          ...mockCreatedUrl,
+          userId: paramId,
+        };
+        mockRepository.create.mockResolvedValue(createdUrl);
 
-    it("Should retry when SHORT_ID_ALREADY_EXISTS error occurs and succeed on second attempt (logs every failed attempt)", async () => {
-      const mockCreatedUrl: Url = {
-        ...MOCK_URL,
-        shortId: mockGeneratedCode,
-        longUrl: paramUrl,
-      };
+        const response = await service.createShortUrl(paramUrl, paramId);
+        expect(mockRepository.create).toHaveBeenCalledTimes(1);
+        expect(mockRepository.create).toHaveBeenCalledWith({
+          shortId: mockGeneratedCode,
+          longUrl: paramUrl,
+          userId: paramId,
+        });
 
-      const ATTEMPTS = 2;
+        expect(response).toEqual(createdUrl);
+      });
 
-      mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
+      it("Should retry when SHORT_ID_ALREADY_EXISTS error occurs and succeed on second attempt (logs every failed attempt)", async () => {
+        const mockCreatedUrl: Url = {
+          ...MOCK_URL,
+          shortId: mockGeneratedCode,
+          longUrl: paramUrl,
+        };
 
-      mockRepository.create
-        .mockRejectedValueOnce(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED)
-        .mockResolvedValueOnce(mockCreatedUrl);
+        const ATTEMPTS = 2;
 
-      const response = await service.createShortUrl(paramUrl);
+        mockCodeGenerator.generateByRange.mockResolvedValue(mockGeneratedCode);
 
-      expect(response).toEqual(mockCreatedUrl);
-      expect(mockRepository.create).toHaveBeenCalledTimes(ATTEMPTS);
-      expect(logger.warn).toHaveBeenCalledTimes(ATTEMPTS - 1);
+        mockRepository.create
+          .mockRejectedValueOnce(MOCK_PRISMA_ERRORS.UNIQUE_CONSTRAINT_FAILED)
+          .mockResolvedValueOnce(mockCreatedUrl);
+
+        const response = await service.createShortUrl(paramUrl);
+
+        expect(response).toEqual(mockCreatedUrl);
+        expect(mockRepository.create).toHaveBeenCalledTimes(ATTEMPTS);
+        expect(logger.warn).toHaveBeenCalledTimes(ATTEMPTS - 1);
+      });
     });
   });
 
@@ -120,7 +124,7 @@ describe("UrlService", () => {
         .fn()
         .mockResolvedValue(MOCK_URL);
 
-      const response = await service.find(MOCK_URL.shortId);
+      const response = await service.findOneByShortId(MOCK_URL.shortId);
 
       expect(mockRepository.findOne().setWhere).toHaveBeenCalledWith({
         shortId: MOCK_URL.shortId,
@@ -134,7 +138,7 @@ describe("UrlService", () => {
         .fn()
         .mockResolvedValue(null);
 
-      const response = await service.find("nonexistant");
+      const response = await service.findOneByShortId("nonexistant");
 
       expect(mockRepository.findOne().setWhere).toHaveBeenCalledWith({
         shortId: "nonexistant",
@@ -160,14 +164,49 @@ describe("UrlService", () => {
     };
 
     it("Logs the action of getting URLs by userId", async () => {
-      await service.findByUserId({ userId: MOCK_URL.userId! });
+      await service.findAllByUserId({ userId: MOCK_URL.userId! });
       expect(logger.info).toHaveBeenCalled();
     });
 
     it("Gets paginated urls from a user by userId", async () => {
       (executeFindAllWithParams as jest.Mock).mockResolvedValue(mockResponse);
-      const response = await service.findByUserId({ userId: MOCK_URL.userId! });
+      const response = await service.findAllByUserId({ userId: MOCK_URL.userId! });
       expect(response).toEqual(mockResponse);
+    });
+  });
+
+  describe("deleteOneByShortId", () => {
+    it("Throws an error if the URL does not exist", async () => {
+      mockRepository.findOne().execute = jest.fn().mockResolvedValue(null);
+      const response = service.deleteOneByShortId(MOCK_URL.shortId, "any");
+
+      expect(response).rejects.toThrow(ApiError);
+      expect(response).rejects.toHaveProperty("status", HTTP_STATUS.NOT_FOUND);
+    });
+
+    it("Throws an error if the url is anonymous (no userId, userId is null)", async () => {
+      mockRepository.findOne().execute = jest.fn().mockResolvedValue({ ...MOCK_URL, userId: null });
+      const response = service.deleteOneByShortId(MOCK_URL.shortId, "any");
+
+      expect(response).rejects.toThrow(ApiError);
+      expect(response).rejects.toHaveProperty("status", HTTP_STATUS.BAD_REQUEST);
+    });
+
+    it("Throws an error if the URL userId is not the same as the provided userId", () => {
+      mockRepository.findOne().execute = jest.fn().mockResolvedValue(MOCK_URL);
+      const response = service.deleteOneByShortId(MOCK_URL.shortId, "different-user-id");
+
+      expect(response).rejects.toThrow(ApiError);
+      expect(response).rejects.toHaveProperty("status", HTTP_STATUS.FORBIDDEN);
+    });
+
+    it("Deletes a URL by shortId if the userId matches", async () => {
+      mockRepository.findOne().execute = jest.fn().mockResolvedValue(MOCK_URL);
+      mockRepository.delete.mockResolvedValue(MOCK_URL);
+
+      const response = await service.deleteOneByShortId(MOCK_URL.shortId, MOCK_URL.userId!);
+      expect(response).toEqual(MOCK_URL);
+      expect(logger.info).toHaveBeenCalled();
     });
   });
 });
@@ -176,6 +215,7 @@ export type MockUrlService = MockInterface<UrlService>;
 
 export const MOCK_SHORTEN_SERVICE: MockUrlService = {
   createShortUrl: jest.fn(),
-  find: jest.fn(),
-  findByUserId: jest.fn(),
+  deleteOneByShortId: jest.fn(),
+  findAllByUserId: jest.fn(),
+  findOneByShortId: jest.fn(),
 };

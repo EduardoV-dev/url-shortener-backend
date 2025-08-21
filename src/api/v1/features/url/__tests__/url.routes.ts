@@ -3,8 +3,10 @@ import { NextFunction, Request as ExpressRequest, Response as ExpressResponse } 
 import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { createTestServer, type Response } from "@/test/test-server";
+import { ApiError } from "@/utils/api-error";
 
 import routes from "../url.routes";
+import { UrlService } from "../url.service";
 
 const request = createTestServer(routes);
 
@@ -30,17 +32,24 @@ jest.mock("../../../middlewares/auth", () => ({
 
 // TODO: Move this mock to a shared place if needed in other tests
 jest.mock("../url.service", () => ({
-  UrlServiceImpl: jest.fn().mockImplementation(() => ({
-    createShortUrl: jest.fn().mockImplementation((_url: string, userId?: string) => {
-      if (userId) return Promise.resolve({ ...MOCK_URL, userId });
-      else return Promise.resolve({ ...MOCK_URL, userId: null });
+  UrlServiceImpl: jest.fn().mockImplementation(
+    (): UrlService => ({
+      createShortUrl: jest.fn().mockImplementation((_url: string, userId?: string) => {
+        if (userId) return Promise.resolve({ ...MOCK_URL, userId });
+        else return Promise.resolve({ ...MOCK_URL, userId: null });
+      }),
+      findOneByShortId: jest.fn().mockImplementation((shortId: string) => {
+        if (shortId === "valid-short-id")
+          return Promise.resolve({ longUrl: "https://long-url.com" });
+        else return Promise.resolve(null);
+      }),
+      findAllByUserId: jest.fn().mockResolvedValue(MOCK_URL),
+      deleteOneByShortId: jest.fn().mockImplementation((shortId: string) => {
+        if (shortId === "valid-short-id") return Promise.resolve(MOCK_URL);
+        else return Promise.reject(new ApiError("Url not found").setStatus(HTTP_STATUS.NOT_FOUND));
+      }),
     }),
-    find: jest.fn().mockImplementation((shortId: string) => {
-      if (shortId === "valid-short-id") return Promise.resolve({ longUrl: "https://long-url.com" });
-      else return Promise.resolve(null);
-    }),
-    findByUserId: jest.fn().mockResolvedValue(MOCK_URL),
-  })),
+  ),
 }));
 
 describe("/urls", () => {
@@ -89,6 +98,25 @@ describe("/urls", () => {
       const response = await request.get("/redirect/invalid-short-id");
       expect(response.statusCode).toBe(HTTP_STATUS.NOT_FOUND);
       expect(response.body).toHaveProperty("success", false);
+    });
+  });
+
+  describe("[DELETE] /:shortId", () => {
+    it("Fails on deletion and returns error with its status code", async () => {
+      const response = await request.delete("/invalid-short-id").set("Authorization", "validToken");
+      expect(response.statusCode).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toHaveProperty("success", false);
+    });
+
+    it("Succeeds on deletion and returns deleted url and its status code", async () => {
+      const response = await request.delete("/valid-short-id").set("Authorization", "validToken");
+      expect(response.statusCode).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveProperty("success", true);
+
+      expect(response.body.data).toEqual({
+        ...MOCK_URL,
+        createdAt: MOCK_URL.createdAt.toISOString(),
+      });
     });
   });
 });
