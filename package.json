@@ -19,6 +19,7 @@
     "prisma:drop:dev": "env-cmd -f .env.local prisma migrate reset",
     "prisma:generate:dev": "env-cmd -f .env.local prisma generate",
     "prisma:migrate:dev": "env-cmd -f .env.local prisma migrate dev --name init",
+    "prisma:seed:dev": "env-cmd -f .env.local ts-node prisma/seed.ts",
     "start": "node dist/src/app.js",
     "test": "jest --passWithNoTests",
     "test:coverage": "jest --coverage",
