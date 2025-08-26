@@ -5,14 +5,14 @@ import YAML from "yamljs";
 
 import { MORGAN_SETTING } from "@/constants/common";
 
-import v1ApiRouter from "./v1";
+import apiRouter from "./features";
 
-const serverRouter = Router();
-const swaggerDocument = YAML.load("./src/api/v1/openapi.yaml");
+const router = Router();
+const swaggerDocument = YAML.load("./src/api/openapi.yaml");
 
-serverRouter.use(morgan(MORGAN_SETTING));
+router.use(morgan(MORGAN_SETTING));
 
-serverRouter.use("/api/v1", v1ApiRouter);
-serverRouter.use("/docs/v1", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+router.use("/api", apiRouter);
+router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-export default serverRouter;
+export default router;

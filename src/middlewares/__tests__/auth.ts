@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-import { MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
+import { MOCK_RESPONSE_EXPRESS } from "@/test/__mocks__/common";
 
 import { authenticationMiddleware, bypassAuthenticationMiddleware } from "../auth";
 

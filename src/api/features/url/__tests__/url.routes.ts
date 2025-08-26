@@ -1,36 +1,14 @@
 import { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from "express";
 
-import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
+import { MOCK_URL } from "@/test/__fixtures__/url";
 import { createTestServer, type Response } from "@/test/test-server";
 import { ApiError } from "@/utils/api-error";
 
 import routes from "../url.routes";
 import { UrlService } from "../url.service";
 
-const request = createTestServer(routes);
-
-// TODO: Move this mock to a shared place if needed in other tests
-jest.mock("../../../middlewares/auth", () => ({
-  bypassAuthenticationMiddleware: (
-    req: ExpressRequest,
-    _res: ExpressResponse,
-    next: NextFunction,
-  ) => {
-    if (req.header("Authorization") === "validToken") req.userId = MOCK_URL.userId || "";
-    else req.userId = undefined;
-
-    next();
-  },
-  authenticationMiddleware: (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
-    if (req.header("Authorization") !== "validToken")
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
-    else req.userId = "valid-user-id";
-    next();
-  },
-}));
-
-// TODO: Move this mock to a shared place if needed in other tests
+// TODO: Place this mock in a global test setup file if used across multiple test files
 jest.mock("../url.service", () => ({
   UrlServiceImpl: jest.fn().mockImplementation(
     (): UrlService => ({
@@ -51,6 +29,28 @@ jest.mock("../url.service", () => ({
     }),
   ),
 }));
+
+// TODO: Place this mock in a global test setup file if used across multiple test files
+jest.mock("@/middlewares/auth", () => ({
+  bypassAuthenticationMiddleware: (
+    req: ExpressRequest,
+    _res: ExpressResponse,
+    next: NextFunction,
+  ) => {
+    if (req.header("Authorization") === "validToken") req.userId = MOCK_URL.userId || "";
+    else req.userId = undefined;
+
+    next();
+  },
+  authenticationMiddleware: (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    if (req.header("Authorization") !== "validToken")
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+    else req.userId = "valid-user-id";
+    next();
+  },
+}));
+
+const request = createTestServer(routes);
 
 describe("/urls", () => {
   describe("[POST] /", () => {

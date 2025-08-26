@@ -16,9 +16,18 @@ export default {
   },
   preset: "ts-jest",
   roots: ["<rootDir>"],
-  setupFilesAfterEnv: ["<rootDir>/src/test/prisma-mock.ts", "<rootDir>/src/test/logger-mock.ts"],
+  setupFilesAfterEnv: [
+    "<rootDir>/src/test/__mocks__/prisma.ts",
+    "<rootDir>/src/test/__mocks__/logger.ts",
+  ],
   testEnvironment: "node",
-  testMatch: ["**/__tests__/**/*.ts", "**/?(*.)+(spec|test).ts", "!**/mocks.ts", "!**/*.mocks.ts"],
+  testMatch: [
+    "**/__tests__/**/*.ts",
+    "**/?(*.)+(spec|test).ts",
+    "!**/mocks.ts",
+    "!**/*.mocks.ts",
+    "!**/__mocks__/*.ts",
+  ],
   transform: {
     "^.+\\.js$": "babel-jest",
     "^.+\\.ts?$": "ts-jest",

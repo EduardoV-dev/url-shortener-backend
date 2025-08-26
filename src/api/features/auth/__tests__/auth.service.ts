@@ -1,10 +1,10 @@
 import bcrypt from "bcrypt";
 
-import { MOCK_USER, MOCK_USER_SERVICE, MockUserService } from "@/api/v1/test/users.mocks";
 import { HTTP_STATUS } from "@/constants/common";
-import { MockInterface } from "@/test/mocks";
+import { MockInterface } from "@/test/__mocks__/common";
 import { ApiError } from "@/utils/api-error";
 
+import { MOCK_USER, MOCK_USER_SERVICE, MockUserService } from "../../user/__tests__/mocks";
 import { AuthSchema } from "../auth.schemas";
 import { AuthService, AuthServiceImpl } from "../auth.service";
 

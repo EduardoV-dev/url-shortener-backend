@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 
-import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { FindAllQueryParams } from "@/repository";
-import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
+import { MOCK_URL } from "@/test/__fixtures__/url";
+import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/__mocks__/common";
 import { ApiError } from "@/utils/api-error";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 

@@ -1,7 +1,7 @@
-import { MOCK_URLS } from "@/api/v1/test/links.mocks";
 import { Url } from "@/generated/prisma";
 import { FIND_ALL_DEFAULTS, OrderBy, PaginationResponseMeta, Select } from "@/repository";
-import { prismaMock } from "@/test/prisma-mock";
+import { MOCK_URLS } from "@/test/__fixtures__/url";
+import { prismaMock } from "@/test/__mocks__/prisma";
 import { ApiError } from "@/utils/api-error";
 
 import { Where } from "../../bases/prisma-model";

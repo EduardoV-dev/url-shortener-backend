@@ -1,9 +1,9 @@
-import { MOCK_URL, MOCK_URLS } from "@/api/v1/test/links.mocks";
-import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
 import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { executeFindAllWithParams, PaginationResponse } from "@/repository";
-import { MOCK_PRISMA_ERRORS, MockInterface } from "@/test/mocks";
+import { createMockRepository, MockRepository } from "@/repository/__tests__/mocks";
+import { MOCK_URL, MOCK_URLS } from "@/test/__fixtures__/url";
+import { MOCK_PRISMA_ERRORS, MockInterface } from "@/test/__mocks__/common";
 import { ApiError } from "@/utils/api-error";
 import { logger } from "@/utils/logger";
 import { Retry, RetryImpl } from "@/utils/retry";

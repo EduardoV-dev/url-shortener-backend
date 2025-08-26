@@ -1,4 +1,4 @@
-import { prismaMock } from "@/test/prisma-mock";
+import { prismaMock } from "@/test/__mocks__/prisma";
 
 import { RepositoryImpl } from ".";
 import { FindAllImpl } from "./methods/find-all";

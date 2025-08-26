@@ -3,7 +3,7 @@ import "module-alias/register";
 import cors from "cors";
 import express, { Response } from "express";
 
-import serverRouter from "./api";
+import router from "./api";
 import { ENVS } from "./config/env";
 import { HTTP_STATUS } from "./constants/common";
 import { httpErrorHandlerMiddleware } from "./middlewares/http-error-handler";
@@ -12,11 +12,11 @@ import { ApiSuccessResponse } from "./utils/api-success-response";
 
 const ALLOWED_ORIGINS = ENVS.CORS_ORIGINS.split(",");
 
-export function createServer(): express.Express {
+export const createServer = (): express.Express => {
   const app = express();
 
   app.use(express.json());
-  app.use(serverRouter);
+  app.use(router);
   app.use(
     cors({
       origin: ALLOWED_ORIGINS.map((origin) => origin.trim()),
@@ -55,4 +55,4 @@ export function createServer(): express.Express {
   app.use(httpErrorHandlerMiddleware);
 
   return app;
-}
+};

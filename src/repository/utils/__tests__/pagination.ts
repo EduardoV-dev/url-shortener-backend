@@ -1,7 +1,7 @@
 import { Url } from "@/generated/prisma";
 import { FindAll, FindAllImpl } from "@/repository/methods/find-all";
 import { FindAllQueryParams } from "@/repository/types/find-all";
-import { prismaMock } from "@/test/prisma-mock";
+import { prismaMock } from "@/test/__mocks__/prisma";
 import { ApiError } from "@/utils/api-error";
 
 import {

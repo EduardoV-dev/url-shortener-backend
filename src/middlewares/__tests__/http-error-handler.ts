@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 
 import { HTTP_STATUS } from "@/constants/common";
 import { Prisma } from "@/generated/prisma";
-import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
+import { MOCK_PRISMA_ERRORS, MOCK_RESPONSE_EXPRESS } from "@/test/__mocks__/common";
 import { ApiError } from "@/utils/api-error";
 
 import { httpErrorHandlerMiddleware } from "../http-error-handler";

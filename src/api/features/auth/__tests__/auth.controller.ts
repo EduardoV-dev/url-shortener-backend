@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 
-import { MOCK_USER } from "@/api/v1/test/users.mocks";
 import { HTTP_STATUS } from "@/constants/common";
-import { MOCK_RESPONSE_EXPRESS } from "@/test/mocks";
+import { MOCK_RESPONSE_EXPRESS } from "@/test/__mocks__/common";
 import { ApiSuccessResponse } from "@/utils/api-success-response";
 
+import { MOCK_USER } from "../../user/__tests__/mocks";
 import { AuthControllerImpl } from "../auth.controller";
 import { AuthResponse } from "../auth.service";
 import { MOCK_AUTH_SERVICE, MockAuthService } from "./auth.service";

@@ -1,6 +1,6 @@
-import { MOCK_URL } from "@/api/v1/test/links.mocks";
 import { Url } from "@/generated/prisma";
-import { prismaMock } from "@/test/prisma-mock";
+import { MOCK_URL } from "@/test/__fixtures__/url";
+import { prismaMock } from "@/test/__mocks__/prisma";
 
 import { FindOne, FindOneImpl } from "../../methods/find-one";
 

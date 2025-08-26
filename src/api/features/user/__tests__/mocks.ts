@@ -1,7 +1,7 @@
 import { User } from "@/generated/prisma";
-import { MockInterface } from "@/test/mocks";
+import { MockInterface } from "@/test/__mocks__/common";
 
-import { UserService } from "../features/user";
+import { UserService } from "../user.service";
 
 export const MOCK_USER: User = {
   createdAt: new Date("2025-08-08T16:23"),

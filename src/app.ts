@@ -11,6 +11,6 @@ app.listen(ENVS.PORT, (err) => {
   }
 
   logger.info(`Server is running on port: ${ENVS.PORT}`);
-  logger.info("API V1 available at: /api/v1");
-  logger.info("API V1 Documentation available at: /docs/v1");
+  logger.info("API available at: /api");
+  logger.info("API Documentation available at: /docs");
 });

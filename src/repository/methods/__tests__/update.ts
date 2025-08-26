@@ -1,6 +1,6 @@
 import { Url } from "@/generated/prisma";
 import { UpdateMethodImpl } from "@/repository/methods/update";
-import { prismaMock } from "@/test/prisma-mock";
+import { prismaMock } from "@/test/__mocks__/prisma";
 
 describe("UpdateMethod", () => {
   describe("Update", () => {

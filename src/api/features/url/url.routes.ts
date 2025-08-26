@@ -1,10 +1,10 @@
 import { Router } from "express";
 
+import { prisma } from "@/libs/prisma";
+import { authenticationMiddleware, bypassAuthenticationMiddleware } from "@/middlewares/auth";
 import { HttpRequestValidator } from "@/middlewares/http-request-validator";
-import { prisma } from "@/storage/prisma";
 import { RetryImpl } from "@/utils/retry";
 
-import { authenticationMiddleware, bypassAuthenticationMiddleware } from "../../middlewares/auth";
 import { ShortCodeGenerator } from "./short-code-generator";
 import { UrlControllerImpl } from "./url.controller";
 import { UrlRepositoryImpl } from "./url.repository";

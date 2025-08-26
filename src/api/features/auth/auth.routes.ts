@@ -1,7 +1,7 @@
 import { Router } from "express";
 
+import { prisma } from "@/libs/prisma";
 import { HttpRequestValidator } from "@/middlewares/http-request-validator";
-import { prisma } from "@/storage/prisma";
 
 import { UserRepositoryImpl, UserServiceImpl } from "../user";
 import { AuthControllerImpl } from "./auth.controller";

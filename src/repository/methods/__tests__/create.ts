@@ -1,5 +1,5 @@
 import { Url } from "@/generated/prisma";
-import { prismaMock } from "@/test/prisma-mock";
+import { prismaMock } from "@/test/__mocks__/prisma";
 
 import { CreateMethodImpl } from "../create";
 

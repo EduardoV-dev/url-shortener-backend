@@ -1,8 +1,8 @@
-import { createMockRepository, MockRepository } from "@/api/v1/test/repositories.mocks";
-import { MOCK_USER } from "@/api/v1/test/users.mocks";
 import { User } from "@/generated/prisma";
+import { createMockRepository, MockRepository } from "@/repository/__tests__/mocks";
 
 import { CreateUserParams, UserService, UserServiceImpl } from "../user.service";
+import { MOCK_USER } from "./mocks";
 
 jest.mock("bcrypt", () => ({
   hash: jest.fn().mockResolvedValue("hashed-password"),

@@ -1,7 +1,8 @@
-import { Repository } from "@/repository";
-import { FindAll } from "@/repository/methods/find-all";
-import { FindOne } from "@/repository/methods/find-one";
-import { MockInterface } from "@/test/mocks";
+import { MockInterface } from "@/test/__mocks__/common";
+
+import { FindAll } from "../methods/find-all";
+import { FindOne } from "../methods/find-one";
+import { Repository } from "../repository";
 
 export type MockFindAll<T> = MockInterface<FindAll<T>>;
 export type MockFindOne<T> = MockInterface<FindOne<T>>;
