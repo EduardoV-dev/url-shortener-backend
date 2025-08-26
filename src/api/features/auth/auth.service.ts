@@ -51,11 +51,11 @@ export class AuthServiceImpl implements AuthService {
 
   public login: AuthService["login"] = async (params) => {
     const user = await this.userService.findByEmail(params.email);
-    if (!user) throw new ApiError("User not found").setStatus(HTTP_STATUS.NOT_FOUND);
+    if (!user) throw new ApiError("User not found", { status: HTTP_STATUS.NOT_FOUND });
 
     const isPasswordValid = await bcrypt.compare(params.password, user.password);
     if (!isPasswordValid)
-      throw new ApiError("Invalid password").setStatus(HTTP_STATUS.UNAUTHORIZED);
+      throw new ApiError("Invalid password", { status: HTTP_STATUS.UNAUTHORIZED });
 
     const token = this.createJwtToken(user);
     return { token, userId: user.id };

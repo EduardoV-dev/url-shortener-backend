@@ -31,6 +31,10 @@ describe("AuthRoutes /auth", () => {
     password: "password123",
   };
 
+  const mockServerError = new ApiError("Server error", {
+    status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
+  });
+
   describe("[POST] /register", () => {
     it("Registers a new user", async () => {
       const response = await request.post("/register").send({
@@ -58,9 +62,7 @@ describe("AuthRoutes /auth", () => {
 
     it("Throws 500 Internal Server Error for server issues", async () => {
       const { signup } = getAuthServiceMocks();
-      signup.mockRejectedValueOnce(
-        new ApiError("Server error").setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR),
-      );
+      signup.mockRejectedValueOnce(mockServerError);
 
       const response = await request.post("/register").send({
         ...authBody,
@@ -93,9 +95,7 @@ describe("AuthRoutes /auth", () => {
     it("Throws 500 Internal Server Error for server issues", async () => {
       const { login } = getAuthServiceMocks();
 
-      login.mockRejectedValue(
-        new ApiError("Server error").setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR),
-      );
+      login.mockRejectedValue(mockServerError);
 
       const response = await request.post("/login").send(authBody);
       expect(response.statusCode).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);

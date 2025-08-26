@@ -1,4 +1,5 @@
-import { ApiError } from "@/utils/api-error";
+import { HTTP_STATUS } from "@/constants/common";
+import { ApiError, ApiErrorOptions } from "@/utils/api-error";
 
 import { OrderBy } from "../bases/base-find";
 import { FindAll } from "../methods/find-all";
@@ -9,22 +10,8 @@ export const FIND_ALL_DEFAULTS: Readonly<FindAllParamsNoOrderBy> = {
   pageSize: 30,
 };
 
-export const ERROR_CODES = {
-  PAGE: {
-    NOT_A_NUMBER: "PAGE_NOT_A_NUMBER",
-    NOT_GREATER_THAN_ZERO: "PAGE_NOT_GREATER_THAN_ZERO",
-  },
-  PAGE_SIZE: {
-    NOT_A_NUMBER: "PAGE_SIZE_NOT_A_NUMBER",
-    NOT_GREATER_THAN_ZERO: "PAGE_SIZE_NOT_GREATER_THAN_ZERO",
-  },
-  SORT_BY: {
-    NOT_A_STRING: "SORT_BY_NOT_A_STRING",
-  },
-  SORT_ORDER: {
-    INVALID: "SORT_ORDER_INVALID",
-    BOTH_REQUIRED: "SORT_ORDER_BOTH_REQUIRED",
-  },
+const API_ERROR_OPTIONS: ApiErrorOptions = {
+  status: HTTP_STATUS.BAD_REQUEST,
 };
 
 /**
@@ -43,33 +30,36 @@ export const parseFindAllQueryParams = <T>({
   sortOrder,
 }: FindAllQueryParams): FindAllParams<T> => {
   if (page && isNaN(Number(page)))
-    throw new ApiError("Page must be a number").setCode(ERROR_CODES.PAGE.NOT_A_NUMBER);
+    throw new ApiError("Page in query param must be a number", API_ERROR_OPTIONS);
 
   if (page && Number(page) < 1)
-    throw new ApiError("Page must be a positive integer and greater than 0").setCode(
-      ERROR_CODES.PAGE.NOT_GREATER_THAN_ZERO,
+    throw new ApiError(
+      "Page in query param must be a positive integer and greater than 0",
+      API_ERROR_OPTIONS,
     );
-
   if (pageSize && isNaN(Number(pageSize)))
-    throw new ApiError("Page size must be a number").setCode(ERROR_CODES.PAGE_SIZE.NOT_A_NUMBER);
+    throw new ApiError("Page size in query param must be a number", API_ERROR_OPTIONS);
 
   if (pageSize && Number(pageSize) <= 0)
-    throw new ApiError("Page size must be a positive integer and greater than 0").setCode(
-      ERROR_CODES.PAGE_SIZE.NOT_GREATER_THAN_ZERO,
+    throw new ApiError(
+      "Page size in query param must be a positive integer and greater than 0",
+      API_ERROR_OPTIONS,
     );
 
   if (sortBy && !isNaN(Number(sortBy)))
-    throw new ApiError("Sort by must be a string").setCode(ERROR_CODES.SORT_BY.NOT_A_STRING);
+    throw new ApiError("Sort by in query param must be a string", API_ERROR_OPTIONS);
 
   if (sortOrder && !["asc", "desc"].includes(sortOrder))
-    throw new ApiError("Sort order must be either 'asc' or 'desc'").setCode(
-      ERROR_CODES.SORT_ORDER.INVALID,
+    throw new ApiError(
+      "Sort order in query param must be either 'asc' or 'desc'",
+      API_ERROR_OPTIONS,
     );
 
   if ((!sortBy && sortOrder) || (sortBy && !sortOrder))
     throw new ApiError(
-      "Both Sort by and Sort order must be provided together or not at all",
-    ).setCode(ERROR_CODES.SORT_ORDER.BOTH_REQUIRED);
+      "Both Sort by and Sort order in query param must be provided together or not at all",
+      API_ERROR_OPTIONS,
+    );
 
   return {
     orderBy: sortBy && sortOrder ? ({ [sortBy]: sortOrder } as OrderBy<T>) : {},

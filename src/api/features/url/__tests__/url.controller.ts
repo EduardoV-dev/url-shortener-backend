@@ -129,7 +129,7 @@ describe("UrlController", () => {
 
   describe("deleteUrl", () => {
     it("Should call next in case there is an error", async () => {
-      const serviceError = new ApiError("User not found").setStatus(HTTP_STATUS.NOT_FOUND);
+      const serviceError = new ApiError("User not found", { status: HTTP_STATUS.NOT_FOUND });
       mockService.deleteOneByShortId.mockRejectedValue(serviceError);
 
       const req = {

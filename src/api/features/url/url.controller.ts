@@ -46,7 +46,7 @@ export class UrlControllerImpl implements UrlController {
       const { shortId } = req.params;
       const url: Url | null = await this.service.findOneByShortId(shortId);
 
-      if (!url) throw new ApiError("URL not found").setStatus(HTTP_STATUS.NOT_FOUND);
+      if (!url) throw new ApiError("URL not found", { status: HTTP_STATUS.NOT_FOUND });
       res.redirect(url.longUrl);
     } catch (err) {
       next(err);

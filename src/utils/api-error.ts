@@ -1,36 +1,32 @@
 import { HTTP_STATUS } from "@/constants/common";
 
-const NAME = "ApiError";
-const DEFAULT_CODE = "API_ERROR";
+export const API_ERROR = Object.freeze({
+  NAME: "ApiError",
+  DEFAULT_CODE: "API_ERROR",
+});
+
+export type ApiErrorOptions = Partial<{
+  code: string;
+  details: unknown;
+  status: number;
+}>;
 
 export class ApiError extends Error {
-  public details: unknown = null;
-  public status: number = HTTP_STATUS.INTERNAL_SERVER_ERROR;
-  public timestamp: Date = new Date();
+  public details: unknown;
+  public status: number;
+  public timestamp: Date;
   public code: string;
 
-  constructor(message: string) {
+  constructor(message: string, options?: ApiErrorOptions) {
     super(message);
-    this.name = NAME;
-    this.code = DEFAULT_CODE;
+    this.code = options?.code || API_ERROR.DEFAULT_CODE;
+    this.details = options?.details || null;
+    this.name = API_ERROR.NAME;
+    this.status = options?.status || HTTP_STATUS.INTERNAL_SERVER_ERROR;
+    this.timestamp = new Date();
 
     Object.setPrototypeOf(this, ApiError.prototype);
     Error.captureStackTrace(this, this.constructor);
-  }
-
-  public setDetails(details: unknown): this {
-    this.details = details;
-    return this;
-  }
-
-  public setStatus(status: number): this {
-    this.status = status;
-    return this;
-  }
-
-  public setCode(code: string): this {
-    this.code = code;
-    return this;
   }
 
   public toJSON() {

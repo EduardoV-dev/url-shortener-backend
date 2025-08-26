@@ -81,9 +81,9 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
   public setPage(page: number): this {
     this.onPaginationConfig();
     if (page < 0)
-      throw new ApiError("Page must be a non-negative integer").setCode(
-        FIND_ALL_ERROR_CODES.VALIDATION,
-      );
+      throw new ApiError("Page must be a non-negative integer", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+      });
 
     this.page = page;
     return this;
@@ -92,9 +92,9 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
   public setPageSize(pageSize: number): this {
     this.onPaginationConfig();
     if (pageSize <= 0)
-      throw new ApiError("Page size must be a positive integer and greater than 0").setCode(
-        FIND_ALL_ERROR_CODES.VALIDATION,
-      );
+      throw new ApiError("Page size must be a positive integer and greater than 0", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+      });
 
     this.pageSize = pageSize;
     return this;
@@ -134,12 +134,13 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
     const totalPages = Math.ceil(count / this.pageSize);
 
     if (this.page > totalPages)
-      throw new ApiError("Page exceeds total pages")
-        .setCode(FIND_ALL_ERROR_CODES.VALIDATION)
-        .setDetails({
+      throw new ApiError("Page exceeds total pages", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+        details: {
           page: this.page,
           totalPages,
-        });
+        },
+      });
 
     return {
       results,
@@ -177,8 +178,8 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
 
   private onPaginationConfig() {
     if (!this.paginated)
-      throw new ApiError("Pagination is not set. Use setPaginated() to enable pagination.").setCode(
-        FIND_ALL_ERROR_CODES.VALIDATION,
-      );
+      throw new ApiError("Pagination is not set. Use setPaginated() to enable pagination.", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+      });
   }
 }

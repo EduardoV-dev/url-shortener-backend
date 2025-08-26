@@ -9,7 +9,7 @@ import { ApiErrorResponse } from "@/utils/api-error-response";
 
 type JwtPayload = Pick<User, "id" | "email">;
 
-const TOKEN_EXPIRED_ERROR = new ApiError("Token is expired").setStatus(HTTP_STATUS.UNAUTHORIZED);
+const TOKEN_EXPIRED_ERROR = new ApiError("Token is expired", { status: HTTP_STATUS.UNAUTHORIZED });
 
 /**
  * Middleware to authenticate requests using JWT tokens.

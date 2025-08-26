@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from "@/constants/common";
 import { Url } from "@/generated/prisma";
 import { FindAll, FindAllImpl } from "@/repository/methods/find-all";
 import { FindAllQueryParams } from "@/repository/types/find-all";
@@ -5,7 +6,6 @@ import { prismaMock } from "@/test/__mocks__/prisma";
 import { ApiError } from "@/utils/api-error";
 
 import {
-  ERROR_CODES,
   executeFindAllWithParams,
   FIND_ALL_DEFAULTS,
   parseFindAllQueryParams,
@@ -21,38 +21,35 @@ describe("Pagination utils", () => {
   describe("parseFindAllQueryParams", () => {
     describe("Validations", () => {
       it("Throws an error if page is not a number", async () => {
-        onValidationError({ page: "not-a-number" as never }, ERROR_CODES.PAGE.NOT_A_NUMBER);
+        onValidationError({ page: "not-a-number" as never });
       });
 
       it("Throws an error if page is not greater than zero", async () => {
-        onValidationError({ page: -1 }, ERROR_CODES.PAGE.NOT_GREATER_THAN_ZERO);
+        onValidationError({ page: -1 });
       });
 
       it("Throws an error if pageSize is not a number", async () => {
-        onValidationError(
-          { pageSize: "not-a-number" as never },
-          ERROR_CODES.PAGE_SIZE.NOT_A_NUMBER,
-        );
+        onValidationError({ pageSize: "not-a-number" as never });
       });
 
       it("Throws an error if pageSize is not greater than zero", async () => {
-        onValidationError({ pageSize: -1 }, ERROR_CODES.PAGE_SIZE.NOT_GREATER_THAN_ZERO);
+        onValidationError({ pageSize: -1 });
       });
 
       it("Throws an error if sortBy is not a string", async () => {
-        onValidationError({ sortBy: "0" as never }, ERROR_CODES.SORT_BY.NOT_A_STRING);
+        onValidationError({ sortBy: "0" as never });
       });
 
       it("Throws an error if sortOrder is not valid", async () => {
-        onValidationError({ sortOrder: "c" }, ERROR_CODES.SORT_ORDER.INVALID);
+        onValidationError({ sortOrder: "c" });
       });
 
       it("Throws an error if sortBy is not provided but sortOrder is not", async () => {
-        onValidationError({ sortOrder: "asc" }, ERROR_CODES.SORT_ORDER.BOTH_REQUIRED);
+        onValidationError({ sortOrder: "asc" });
       });
 
       it("Throws an error if sortOrder is provided but sortBy is not", async () => {
-        onValidationError({ sortBy: "createdAt" }, ERROR_CODES.SORT_ORDER.BOTH_REQUIRED);
+        onValidationError({ sortBy: "createdAt" });
       });
     });
 
@@ -115,11 +112,11 @@ describe("Pagination utils", () => {
     });
   });
 
-  const onValidationError = async (params: FindAllQueryParams, expectedCode: string) => {
+  const onValidationError = async (params: FindAllQueryParams) => {
     try {
       parseFindAllQueryParams<Url>(params);
     } catch (error) {
-      expect((error as ApiError).code).toBe(expectedCode);
+      expect((error as ApiError).status).toBe(HTTP_STATUS.BAD_REQUEST);
     }
   };
 });

@@ -129,7 +129,7 @@ describe("Error Handler Middleware (httpErrorHandlerMiddleware)", () => {
 
   it("Handles custom ApiError instances", () => {
     httpErrorHandlerMiddleware(
-      new ApiError("Custom error").setStatus(HTTP_STATUS.UNAUTHORIZED),
+      new ApiError("Custom error", { status: HTTP_STATUS.UNAUTHORIZED }),
       req,
       res,
       next,

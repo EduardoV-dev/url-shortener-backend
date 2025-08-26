@@ -18,40 +18,37 @@ const getApiError = (error: unknown): ApiError => {
     // https://www.prisma.io/docs/reference/api-reference/error-reference
     switch (error.code) {
       case PRISMA_CODES.VALUE_TOO_LONG:
-        return new ApiError("Input value is too long for a field.")
-          .setStatus(HTTP_STATUS.BAD_REQUEST)
-          .setDetails(error);
+        return new ApiError("Input value is too long for a field.", {
+          details: error,
+          status: HTTP_STATUS.BAD_REQUEST,
+        });
       case PRISMA_CODES.UNIQUE_CONSTRAINT_FAILED:
-        return new ApiError("A unique constraint failed.")
-          .setStatus(HTTP_STATUS.CONFLICT)
-          .setDetails(error);
+        return new ApiError("A unique constraint failed.", {
+          details: error,
+          status: HTTP_STATUS.CONFLICT,
+        });
       case PRISMA_CODES.FOREIGN_KEY_CONSTRAINT_FAILED:
-        return new ApiError("Foreign key constraint failed.").setStatus(HTTP_STATUS.BAD_REQUEST);
+        return new ApiError("Foreign key constraint failed.", {
+          details: error,
+          status: HTTP_STATUS.BAD_REQUEST,
+        });
       case PRISMA_CODES.RECORD_NOT_FOUND:
-        return new ApiError("Record not found.").setStatus(HTTP_STATUS.NOT_FOUND);
+        return new ApiError("Record not found.", { status: HTTP_STATUS.NOT_FOUND });
       default:
-        return new ApiError("A database error occurred.").setStatus(
-          HTTP_STATUS.INTERNAL_SERVER_ERROR,
-        );
+        return new ApiError("A database error occurred.");
     }
   }
 
   if (error instanceof Prisma.PrismaClientValidationError)
-    return new ApiError("Invalid input data.").setStatus(HTTP_STATUS.BAD_REQUEST);
+    return new ApiError("Invalid input data.", { status: HTTP_STATUS.BAD_REQUEST });
 
   if (error instanceof Prisma.PrismaClientInitializationError)
-    return new ApiError("Database initialization error.").setStatus(
-      HTTP_STATUS.INTERNAL_SERVER_ERROR,
-    );
+    return new ApiError("Database initialization error.");
 
   if (error instanceof Prisma.PrismaClientRustPanicError)
-    return new ApiError("Prisma engine panic. Please try again later.").setStatus(
-      HTTP_STATUS.INTERNAL_SERVER_ERROR,
-    );
+    return new ApiError("Prisma engine panic. Please try again later.");
 
-  return new ApiError("An unexpected error occurred.")
-    .setStatus(HTTP_STATUS.INTERNAL_SERVER_ERROR)
-    .setDetails(error);
+  return new ApiError("An unexpected error occurred.", { details: error });
 };
 
 /**
@@ -72,6 +69,7 @@ export const httpErrorHandlerMiddleware = (
   logger.error(`Error occurred during [${req.method}]: ${req.originalUrl}`, err);
 
   const isApiError = err instanceof ApiError;
+
   if (isApiError)
     return res.status(err.status).json(new ApiErrorResponse(err.message, err.details).toJSON());
 

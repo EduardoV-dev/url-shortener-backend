@@ -114,15 +114,17 @@ export class UrlServiceImpl implements UrlService {
 
     const url: Url | null = await this.findOneByShortId(shortId);
     if (!url)
-      throw new ApiError(`URL with shortId ${shortId} not found`).setStatus(HTTP_STATUS.NOT_FOUND);
+      throw new ApiError(`URL with shortId ${shortId} not found`, {
+        status: HTTP_STATUS.NOT_FOUND,
+      });
 
     if (!url.userId)
-      throw new ApiError("Cannot delete an anonymous URL").setStatus(HTTP_STATUS.BAD_REQUEST);
+      throw new ApiError("Cannot delete an anonymous URL", { status: HTTP_STATUS.BAD_REQUEST });
 
     if (url.userId !== userId)
-      throw new ApiError("You do not have permission to delete this URL").setStatus(
-        HTTP_STATUS.FORBIDDEN,
-      );
+      throw new ApiError("You do not have permission to delete this URL", {
+        status: HTTP_STATUS.FORBIDDEN,
+      });
 
     return await this.repository.delete({ shortId });
   };

@@ -24,7 +24,8 @@ jest.mock("../url.service", () => ({
       findAllByUserId: jest.fn().mockResolvedValue(MOCK_URL),
       deleteOneByShortId: jest.fn().mockImplementation((shortId: string) => {
         if (shortId === "valid-short-id") return Promise.resolve(MOCK_URL);
-        else return Promise.reject(new ApiError("Url not found").setStatus(HTTP_STATUS.NOT_FOUND));
+        else
+          return Promise.reject(new ApiError("Url not found", { status: HTTP_STATUS.NOT_FOUND }));
       }),
     }),
   ),
