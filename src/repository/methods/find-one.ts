@@ -1,3 +1,5 @@
+import { ApiError } from "@/utils/api-error";
+
 import { BaseFind, BaseFindImpl } from "../bases/base-find";
 import { Model } from "../bases/prisma-model";
 
@@ -12,28 +14,34 @@ export interface FindOne<T> extends BaseFind<T> {
   execute(): Promise<T | null>;
 }
 
+export const FIND_ONE_ERROR_CODES = {
+  VALIDATION: "FIND_ONE_VALIDATION_ERROR",
+};
+
 export class FindOneImpl<T> extends BaseFindImpl<T> implements FindOne<T> {
   constructor(model: Model) {
     super(model);
   }
 
   private get findOneArgs() {
-    if (!this.where) throw new Error("Where condition is required for findOne operation");
+    const whereKeys = Object.keys(this.where);
+    const hasOnlyIsDeleted = whereKeys.length === 1 && whereKeys.includes("isDeleted");
+
+    if (hasOnlyIsDeleted)
+      throw new ApiError("Where condition is required for findOne operation", {
+        code: FIND_ONE_ERROR_CODES.VALIDATION,
+      });
 
     return {
-      ...(this.where && { where: this.where }),
+      omit: this.omit,
+      where: this.where,
       ...(this.select && { select: this.select }),
     };
   }
 
-  private clearConfig() {
-    this.where = null;
-    this.select = null;
-  }
-
   public execute: FindOne<T>["execute"] = () => {
     const response = this.model.findUnique(this.findOneArgs);
-    this.clearConfig();
+    this.resetBaseFindAttributes();
     return response;
   };
 }

@@ -8,7 +8,7 @@ info:
     name: "MIT"
     url: "https://opensource.org/license/mit/"
 servers:
-  - url: "http://localhost:3000/api/v1" # Replace with your actual server URL or list multiple servers as needed
+  - url: "http://localhost:3000/api" # Replace with your actual server URL or list multiple servers as needed
     description: "Localhost"
 
 paths:
@@ -191,6 +191,53 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ApiErrorResponse"
+  /urls/{shortId}:
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - urls
+      summary: "Delete shortened url by using short ID"
+      operationId: "deleteShortId"
+      parameters:
+        - name: shortId
+          in: path
+          required: true
+          description: "Short ID of the URL to delete"
+          schema:
+            type: string
+      responses:
+        200:
+          description: "URL deleted successfully"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiSuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Url"
+        403:
+          description: "Resource fordidden for deletion"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        404:
+          description: "Not Found - Short URL does not exist"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
   /urls/redirect/{shortId}:
     get:
       tags:
@@ -282,6 +329,10 @@ components:
           example: "2023-10-01T12:00:00Z"
           format: date-time
           type: string
+        updatedAt:
+          type: string
+          format: date-time
+          description: "Timestamp when the URL was updated"
         userId:
           description: "ID of the user who created the short URL, if not defined, anonymous user created it"
           example: "123e4567-e89b-12d3-a456-426614174001"
@@ -304,6 +355,10 @@ components:
           type: string
           format: date-time
           description: "Timestamp when the user was created"
+        updatedAt:
+          type: string
+          format: date-time
+          description: "Timestamp when the user was updated"
         urls:
           type: array
           items:

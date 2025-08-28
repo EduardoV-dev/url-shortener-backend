@@ -10,18 +10,20 @@ export type MockRepository<T> = MockInterface<Repository<T>>;
 
 const findAllMock = <T>(): MockFindAll<T> => ({
   execute: jest.fn(),
-  setWhere: jest.fn().mockReturnThis(),
+  setOmit: jest.fn().mockReturnThis(),
   setOrderBy: jest.fn().mockReturnThis(),
-  setSelect: jest.fn().mockReturnThis(),
   setPage: jest.fn().mockReturnThis(),
   setPageSize: jest.fn().mockReturnThis(),
   setPaginated: jest.fn().mockReturnThis(),
+  setSelect: jest.fn().mockReturnThis(),
+  setWhere: jest.fn().mockReturnThis(),
 });
 
 const findOneMock = <T>(): MockFindOne<T> => ({
   execute: jest.fn(),
-  setWhere: jest.fn().mockReturnThis(),
+  setOmit: jest.fn().mockReturnThis(),
   setSelect: jest.fn().mockReturnThis(),
+  setWhere: jest.fn().mockReturnThis(),
 });
 
 export const createMockRepository = <T>(): MockRepository<T> => ({

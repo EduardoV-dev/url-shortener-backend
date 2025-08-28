@@ -1,8 +1,8 @@
 import { HTTP_STATUS } from "@/constants/common";
 import { ApiError } from "@/utils/api-error";
 
-import { BaseFind, BaseFindImpl, Nullable, OrderBy, Select } from "../bases/base-find";
-import { Model, Where } from "../bases/prisma-model";
+import { BaseFind, BaseFindAttributes, BaseFindImpl, Nullable, OrderBy } from "../bases/base-find";
+import { Model } from "../bases/prisma-model";
 import { PaginationResponse } from "../types/pagination";
 import { FIND_ALL_DEFAULTS } from "../utils/pagination";
 
@@ -51,12 +51,10 @@ export const FIND_ALL_ERROR_CODES = {
   VALIDATION: "FIND_ALL_VALIDATION_ERROR",
 };
 
-interface FindAllArgs<T> {
+interface FindAllArgs<T> extends Partial<BaseFindAttributes<T>> {
   orderBy?: Nullable<OrderBy<T>>;
-  select?: Nullable<Select<T>>;
   skip?: number;
   take?: number;
-  where?: Nullable<Where<T>>;
 }
 
 export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
@@ -84,7 +82,6 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
     if (page < 0)
       throw new ApiError("Page must be a non-negative integer", {
         code: FIND_ALL_ERROR_CODES.VALIDATION,
-        status: HTTP_STATUS.BAD_REQUEST,
       });
 
     this.page = page;
@@ -96,7 +93,6 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
     if (pageSize <= 0)
       throw new ApiError("Page size must be a positive integer and greater than 0", {
         code: FIND_ALL_ERROR_CODES.VALIDATION,
-        status: HTTP_STATUS.BAD_REQUEST,
       });
 
     this.pageSize = pageSize;
@@ -130,7 +126,7 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
     const [results, count] = await Promise.all<[T[], number]>([
       this.model.findMany(this.findArgs),
       this.model.count({
-        ...(this.findArgs.where && { where: this.findArgs.where }),
+        where: this.findArgs.where,
       }),
     ]);
 
@@ -157,19 +153,19 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
   };
 
   private clearFindArgs(): void {
+    this.resetBaseFindAttributes();
     this.orderBy = null;
     this.page = FIND_ALL_DEFAULTS.page;
     this.pageSize = FIND_ALL_DEFAULTS.pageSize;
     this.paginated = false;
-    this.select = null;
-    this.where = null;
   }
 
   private get findArgs(): FindAllArgs<T> {
     return {
+      omit: this.omit,
+      where: this.where,
       ...(this.orderBy && { orderBy: this.orderBy }),
       ...(this.select && { select: this.select }),
-      ...(this.where && { where: this.where }),
       ...(this.paginated && {
         skip: (this.page - 1) * this.pageSize,
         take: this.pageSize,

@@ -117,6 +117,7 @@ describe("/urls", () => {
       expect(response.body.data).toEqual({
         ...MOCK_URL,
         createdAt: MOCK_URL.createdAt.toISOString(),
+        updatedAt: MOCK_URL.updatedAt.toISOString(),
       });
     });
   });

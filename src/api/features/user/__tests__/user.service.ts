@@ -18,22 +18,15 @@ describe("UserService", () => {
   });
 
   describe("create", () => {
-    const createdUser: User = {
-      createdAt: new Date(),
-      email: "created@gmail.com",
-      id: "1",
-      password: "hashed-password",
-    };
-
     const params: CreateUserParams = {
-      email: createdUser.email,
-      password: "password",
+      email: MOCK_USER.email,
+      password: MOCK_USER.password,
     };
 
     it("Creates a new user successfully", async () => {
-      repository.create.mockResolvedValue(createdUser);
+      repository.create.mockResolvedValue(MOCK_USER);
       const response = await service.create(params);
-      expect(response).toEqual(createdUser);
+      expect(response).toEqual(MOCK_USER);
     });
   });
 

@@ -1,8 +1,9 @@
 import { Url } from "@/generated/prisma";
 import { MOCK_URL } from "@/test/__fixtures__/url";
 import { prismaMock } from "@/test/__mocks__/prisma";
+import { ApiError } from "@/utils/api-error";
 
-import { FindOne, FindOneImpl } from "../../methods/find-one";
+import { FIND_ONE_ERROR_CODES, FindOne, FindOneImpl } from "../../methods/find-one";
 
 describe("ReadRepository | FindOne", () => {
   let findOne: FindOne<Url>;
@@ -41,7 +42,7 @@ describe("ReadRepository | FindOne", () => {
     try {
       await findOne.execute();
     } catch (error) {
-      expect(error).toBeInstanceOf(Error);
+      expect((error as ApiError).code).toBe(FIND_ONE_ERROR_CODES.VALIDATION);
     }
   });
 });

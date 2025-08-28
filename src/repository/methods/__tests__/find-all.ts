@@ -31,10 +31,13 @@ describe("Methods | FindAll", () => {
       const response = await findAll.execute();
 
       expect(response.results).toEqual(MOCK_URLS);
-      expect(prismaMock.url.findMany).toHaveBeenCalledWith({});
+      expect(prismaMock.url.findMany).toHaveBeenCalledWith({
+        where: { isDeleted: false },
+        omit: { isDeleted: true },
+      });
     });
 
-    it("Should return all records using select, sort by and where clause", async () => {
+    it("Should return all records using select, sort by, omit, and where clause", async () => {
       const results = new Array(MOCK_URLS.length * 3)
         .fill(MOCK_URLS)
         .flat()
@@ -47,7 +50,7 @@ describe("Methods | FindAll", () => {
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
       const orderBy: OrderBy<Url> = { createdAt: "desc" };
-      const select: Select<Url> = { createdAt: true, id: true, longUrl: true };
+      const select: Select<Url> = { createdAt: true, id: true, longUrl: true, isDeleted: true };
       const where: Where<Url> = { userId: "user1" };
 
       prismaMock.url.findMany.mockResolvedValue(results as Url[]);
@@ -60,9 +63,10 @@ describe("Methods | FindAll", () => {
 
       expect(response.results).toEqual(results);
       expect(prismaMock.url.findMany).toHaveBeenCalledWith({
+        omit: { isDeleted: true },
         orderBy: { createdAt: "desc" },
-        select: { createdAt: true, id: true, longUrl: true },
-        where: { userId: "user1" },
+        select: { createdAt: true, id: true, longUrl: true, isDeleted: true },
+        where: { userId: "user1", isDeleted: false },
       });
     });
   });

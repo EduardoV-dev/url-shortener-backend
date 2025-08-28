@@ -15,5 +15,12 @@ export class UpdateMethodImpl<T> extends PrismaModel implements UpdateMethod<T> 
     super(model);
   }
 
-  public update: UpdateMethod<T>["update"] = (data, where) => this.model.update({ data, where });
+  public update: UpdateMethod<T>["update"] = (data, where) =>
+    this.model.update({
+      data: {
+        ...data,
+        updatedAt: new Date(),
+      },
+      where,
+    });
 }
