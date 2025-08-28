@@ -1,3 +1,4 @@
+import { HTTP_STATUS } from "@/constants/common";
 import { ApiError } from "@/utils/api-error";
 
 import { BaseFind, BaseFindImpl, Nullable, OrderBy, Select } from "../bases/base-find";
@@ -83,6 +84,7 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
     if (page < 0)
       throw new ApiError("Page must be a non-negative integer", {
         code: FIND_ALL_ERROR_CODES.VALIDATION,
+        status: HTTP_STATUS.BAD_REQUEST,
       });
 
     this.page = page;
@@ -94,6 +96,7 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
     if (pageSize <= 0)
       throw new ApiError("Page size must be a positive integer and greater than 0", {
         code: FIND_ALL_ERROR_CODES.VALIDATION,
+        status: HTTP_STATUS.BAD_REQUEST,
       });
 
     this.pageSize = pageSize;
@@ -136,10 +139,8 @@ export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
     if (this.page > totalPages)
       throw new ApiError("Page exceeds total pages", {
         code: FIND_ALL_ERROR_CODES.VALIDATION,
-        details: {
-          page: this.page,
-          totalPages,
-        },
+        details: { page: this.page, totalPages },
+        status: HTTP_STATUS.BAD_REQUEST,
       });
 
     return {

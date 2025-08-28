@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 
+import { ENVS } from "@/config/env";
 import { User } from "@/generated/prisma";
 import { logger } from "@/utils/logger";
 
@@ -26,11 +27,6 @@ export interface UserService {
 }
 
 /**
- * Number of rounds to use when hashing passwords with bcrypt.
- */
-const BCRYPT_SALT_ROUNDS = 10;
-
-/**
  * Implementation of the UserService interface.
  * It uses the UserRepository for database operations.
  */
@@ -39,7 +35,7 @@ export class UserServiceImpl implements UserService {
 
   public create: UserService["create"] = async ({ email, password }) => {
     logger.info(`Creating user with email: ${email}`);
-    const hashed = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+    const hashed = await bcrypt.hash(password, ENVS.BCRYPT_SALT_ROUNDS);
     return this.repository.create({ email, password: hashed });
   };
 

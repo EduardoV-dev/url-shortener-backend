@@ -24,6 +24,72 @@ describe("Error Handler Middleware (httpErrorHandlerMiddleware)", () => {
   });
 
   describe("PrismaClientKnownRequestError", () => {
+    describe("entity const value", () => {
+      beforeEach(() => {
+        MOCK_PRISMA_ERRORS.VALUE_TOO_LONG.meta = undefined;
+      });
+
+      it("entity value is the one provided in the error.meta", () => {
+        MOCK_PRISMA_ERRORS.VALUE_TOO_LONG.meta = { modelName: "Model" };
+        httpErrorHandlerMiddleware(MOCK_PRISMA_ERRORS.VALUE_TOO_LONG, req, res, next);
+
+        expect(res.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: false,
+            error: expect.objectContaining({
+              entity: "Model",
+            }),
+          }),
+        );
+      });
+
+      it("entity value is 'Unknown entity' when error.meta.modelName is undefined", () => {
+        httpErrorHandlerMiddleware(MOCK_PRISMA_ERRORS.VALUE_TOO_LONG, req, res, next);
+
+        expect(res.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: false,
+            error: expect.objectContaining({
+              entity: "Unknown entity",
+            }),
+          }),
+        );
+      });
+    });
+
+    describe("fields const value", () => {
+      beforeEach(() => {
+        MOCK_PRISMA_ERRORS.VALUE_TOO_LONG.meta = undefined;
+      });
+
+      const handleFieldTests = (fields: unknown) => {
+        httpErrorHandlerMiddleware(MOCK_PRISMA_ERRORS.VALUE_TOO_LONG, req, res, next);
+
+        expect(res.json).toHaveBeenCalledWith(
+          expect.objectContaining({
+            success: false,
+            error: expect.objectContaining({
+              fields,
+            }),
+          }),
+        );
+      };
+
+      it("Returns multiple fields when error.meta.target is an array", () => {
+        MOCK_PRISMA_ERRORS.VALUE_TOO_LONG.meta = { target: ["field1", "field2"] };
+        handleFieldTests("field1, field2");
+      });
+
+      it("Returns single field when error.meta.target is a string", () => {
+        MOCK_PRISMA_ERRORS.VALUE_TOO_LONG.meta = { target: "field" };
+        handleFieldTests("field");
+      });
+
+      it("Returns 'Unknown field' when error.meta.target is undefined", () => {
+        handleFieldTests("Unknown field");
+      });
+    });
+
     it("Handles VALUE_TOO_LONG error", () => {
       httpErrorHandlerMiddleware(MOCK_PRISMA_ERRORS.VALUE_TOO_LONG, req, res, next);
       expect(res.status).toHaveBeenCalledWith(HTTP_STATUS.BAD_REQUEST);

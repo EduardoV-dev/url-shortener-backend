@@ -45,11 +45,11 @@ describe("Pagination utils", () => {
       });
 
       it("Throws an error if sortBy is not provided but sortOrder is not", async () => {
-        onValidationError({ sortOrder: "asc" });
+        onValidationError({ sortOrder: "asc" }, { sortOrder: "asc", sortBy: null });
       });
 
       it("Throws an error if sortOrder is provided but sortBy is not", async () => {
-        onValidationError({ sortBy: "createdAt" });
+        onValidationError({ sortBy: "createdAt" }, { sortOrder: null, sortBy: "createdAt" });
       });
     });
 
@@ -112,11 +112,13 @@ describe("Pagination utils", () => {
     });
   });
 
-  const onValidationError = async (params: FindAllQueryParams) => {
+  const onValidationError = async (params: FindAllQueryParams, details: unknown = null) => {
     try {
       parseFindAllQueryParams<Url>(params);
     } catch (error) {
-      expect((error as ApiError).status).toBe(HTTP_STATUS.BAD_REQUEST);
+      const err = error as ApiError;
+      expect(err.status).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(err.details).toEqual(details);
     }
   };
 });

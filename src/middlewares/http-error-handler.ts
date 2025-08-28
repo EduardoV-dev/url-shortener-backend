@@ -15,32 +15,45 @@ import { logger } from "@/utils/logger";
  */
 const getApiError = (error: unknown): ApiError => {
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    const entity = error.meta?.modelName || "Unknown entity";
+    const fields = Array.isArray(error.meta?.target)
+      ? error.meta.target.join(", ")
+      : error.meta?.target || "Unknown field";
+
+    const details = { entity, fields };
+
     // https://www.prisma.io/docs/reference/api-reference/error-reference
     switch (error.code) {
       case PRISMA_CODES.VALUE_TOO_LONG:
-        return new ApiError("Input value is too long for a field.", {
-          details: error,
+        return new ApiError(`Input value is too long for field(s) in ${entity}.`, {
+          details,
           status: HTTP_STATUS.BAD_REQUEST,
         });
       case PRISMA_CODES.UNIQUE_CONSTRAINT_FAILED:
-        return new ApiError("A unique constraint failed.", {
-          details: error,
+        return new ApiError(`A record of ${entity} already exists with the provided ${fields}`, {
+          details,
           status: HTTP_STATUS.CONFLICT,
         });
       case PRISMA_CODES.FOREIGN_KEY_CONSTRAINT_FAILED:
-        return new ApiError("Foreign key constraint failed.", {
-          details: error,
-          status: HTTP_STATUS.BAD_REQUEST,
-        });
+        return new ApiError(
+          `Could not create a record of ${entity} as foreign key constraint failed.`,
+          {
+            status: HTTP_STATUS.BAD_REQUEST,
+          },
+        );
       case PRISMA_CODES.RECORD_NOT_FOUND:
-        return new ApiError("Record not found.", { status: HTTP_STATUS.NOT_FOUND });
+        return new ApiError(`Record of ${entity} not found.`, { status: HTTP_STATUS.NOT_FOUND });
       default:
         return new ApiError("A database error occurred.");
     }
   }
 
-  if (error instanceof Prisma.PrismaClientValidationError)
-    return new ApiError("Invalid input data.", { status: HTTP_STATUS.BAD_REQUEST });
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return new ApiError(
+      "Missing or invalid required field(s) in request data. Please ensure all required fields are provided and have valid values.",
+      { status: HTTP_STATUS.BAD_REQUEST },
+    );
+  }
 
   if (error instanceof Prisma.PrismaClientInitializationError)
     return new ApiError("Database initialization error.");

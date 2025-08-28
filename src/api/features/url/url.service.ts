@@ -92,7 +92,11 @@ export class UrlServiceImpl implements UrlService {
         MAX_CODE_LENGTH,
       );
 
-      return await this.repository.create({ shortId, longUrl: url, userId });
+      return await this.repository.create({
+        longUrl: url,
+        shortId,
+        userId,
+      });
     });
   };
 

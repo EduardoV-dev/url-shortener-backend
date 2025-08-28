@@ -11,6 +11,7 @@ describe("ENVS", () => {
   });
 
   it("should read environment variables", async () => {
+    process.env.BCRYPT_SALT_ROUNDS = "15";
     process.env.CORS_ORIGINS = "foo";
     process.env.DATABASE_URL = "bar";
     process.env.JWT_EXPIRES_IN = "2d";
@@ -21,6 +22,7 @@ describe("ENVS", () => {
 
     const { ENVS } = await import("../env");
     expect(ENVS).toEqual({
+      BCRYPT_SALT_ROUNDS: 15,
       CORS_ORIGINS: "foo",
       DATABASE_URL: "bar",
       JWT_EXPIRES_IN: "2d",
@@ -32,6 +34,7 @@ describe("ENVS", () => {
   });
 
   it("should use default values if env vars are missing", async () => {
+    process.env.BCRYPT_SALT_ROUNDS = undefined;
     process.env.CORS_ORIGINS = undefined;
     process.env.DATABASE_URL = undefined;
     process.env.JWT_EXPIRES_IN = undefined;
@@ -42,6 +45,7 @@ describe("ENVS", () => {
 
     const { ENVS } = await import("../env");
     expect(ENVS).toEqual({
+      BCRYPT_SALT_ROUNDS: 10,
       CORS_ORIGINS: "",
       DATABASE_URL: "",
       JWT_EXPIRES_IN: "1d",

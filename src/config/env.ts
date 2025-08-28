@@ -8,6 +8,7 @@ dotenv.config({
 });
 
 export const ENVS = Object.freeze({
+  BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
   CORS_ORIGINS: process.env.CORS_ORIGINS || "",
   DATABASE_URL: process.env.DATABASE_URL || "",
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "1d",

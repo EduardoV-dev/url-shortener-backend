@@ -58,7 +58,7 @@ export const parseFindAllQueryParams = <T>({
   if ((!sortBy && sortOrder) || (sortBy && !sortOrder))
     throw new ApiError(
       "Both Sort by and Sort order in query param must be provided together or not at all",
-      API_ERROR_OPTIONS,
+      { ...API_ERROR_OPTIONS, details: { sortBy: sortBy || null, sortOrder: sortOrder || null } },
     );
 
   return {

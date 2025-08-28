@@ -6,6 +6,7 @@ import { ParamsDictionary } from "express-serve-static-core";
 declare global {
   namespace NodeJS {
     interface ProcessEnv {
+      BCRYPT_SALT_ROUNDS: string | undefined;
       CORS_ORIGINS: string | undefined;
       DATABASE_URL: string | undefined;
       JWT_EXPIRES_IN: string | number | undefined;

@@ -1,5 +1,4 @@
-import { PrismaClient } from "@/generated/prisma";
-
+import { PrismaClient } from "../../src/generated/prisma";
 import { URLS } from "./data/urls";
 
 const URLS_FOR_USERS = URLS.slice(0, 50);
