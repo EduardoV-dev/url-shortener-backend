@@ -1,0 +1,182 @@
+import { HTTP_STATUS } from "@/constants/common";
+import { ApiError } from "@/utils/api-error";
+
+import { BaseFind, BaseFindAttributes, BaseFindImpl, Nullable, OrderBy } from "../bases/base-find";
+import { Model } from "../bases/prisma-model";
+import { PaginationResponse } from "../types/pagination";
+import { FIND_ALL_DEFAULTS } from "../utils/pagination";
+
+export interface FindAll<T> extends BaseFind<T> {
+  /**
+   * Executes the find operation to retrieve all records.
+   * @returns A promise that resolves to a PaginationResponse containing the records and pagination metadata.
+   * @remarks This method retrieves all records based on the specified criteria, including pagination and sorting.
+   * If pagination is enabled, it returns a PaginationResponse with the data and metadata about the pagination.
+   * If pagination is not enabled, it returns a simple array of records.
+   */
+  execute(): Promise<PaginationResponse<T>>;
+  /**
+   * Sets the order by criteria for the find operation.
+   * @param orderBy - An object defining the fields and their sort order (asc/desc).
+   * @returns The current instance for method chaining.
+   * @remarks This method allows you to specify how the results should be sorted.
+   */
+  setOrderBy(orderBy: OrderBy<T>): this;
+  /**
+   * Sets the select criteria for the find operation.
+   * @param select - An object defining which fields to include in the results.
+   * @returns The current instance for method chaining.
+   * @remarks This method allows you to specify which fields should be returned in the results.
+   */
+  setPaginated(): this;
+  /**
+   * Sets page for the find operation.
+   * @param page - The current page number to retrieve.
+   * @returns The current instance for method chaining.
+   * @remarks This method allows you to specify which page of results to retrieve, useful for pagination.
+   * @throws Error if the page number is negative.
+   */
+  setPage(page: number): this;
+  /**
+   * Sets the number of records to return per page.
+   * @param pageSize - The number of records to return per page.
+   * @returns The current instance for method chaining.
+   * @remarks This method allows you to specify how many records should be returned in each page of results.
+   * @throws Error if the page size is not a positive integer and greater than 0.
+   */
+  setPageSize(pageSize: number): this;
+}
+
+export const FIND_ALL_ERROR_CODES = {
+  VALIDATION: "FIND_ALL_VALIDATION_ERROR",
+};
+
+interface FindAllArgs<T> extends Partial<BaseFindAttributes<T>> {
+  orderBy?: Nullable<OrderBy<T>>;
+  skip?: number;
+  take?: number;
+}
+
+export class FindAllImpl<T> extends BaseFindImpl<T> implements FindAll<T> {
+  protected orderBy: Nullable<OrderBy<T>>;
+  protected paginated: boolean;
+  protected page: number;
+  protected pageSize: number;
+
+  constructor(model: Model) {
+    super(model);
+
+    this.orderBy = null;
+    this.page = FIND_ALL_DEFAULTS.page;
+    this.pageSize = FIND_ALL_DEFAULTS.pageSize;
+    this.paginated = false;
+  }
+
+  public setPaginated(): this {
+    this.paginated = true;
+    return this;
+  }
+
+  public setPage(page: number): this {
+    this.onPaginationConfig();
+    if (page < 0)
+      throw new ApiError("Page must be a non-negative integer", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+      });
+
+    this.page = page;
+    return this;
+  }
+
+  public setPageSize(pageSize: number): this {
+    this.onPaginationConfig();
+    if (pageSize <= 0)
+      throw new ApiError("Page size must be a positive integer and greater than 0", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+      });
+
+    this.pageSize = pageSize;
+    return this;
+  }
+
+  public setOrderBy(orderBy: OrderBy<T>): this {
+    this.orderBy = orderBy;
+    return this;
+  }
+
+  public execute: FindAll<T>["execute"] = async () => {
+    const response = this.paginated
+      ? await this.findAllPaginatedResults()
+      : await this.findAllResults();
+
+    this.clearFindArgs();
+    return response;
+  };
+
+  private findAllResults = async (): Promise<PaginationResponse<T>> => {
+    const results = await this.model.findMany(this.findArgs);
+
+    return {
+      results,
+      meta: null,
+    };
+  };
+
+  private findAllPaginatedResults = async (): Promise<PaginationResponse<T>> => {
+    const [results, count] = await Promise.all<[T[], number]>([
+      this.model.findMany(this.findArgs),
+      this.model.count({
+        where: this.findArgs.where,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(count / this.pageSize);
+
+    if (this.page > totalPages)
+      throw new ApiError("Page exceeds total pages", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+        details: { page: this.page, totalPages },
+        status: HTTP_STATUS.BAD_REQUEST,
+      });
+
+    return {
+      results,
+      meta: {
+        totalItems: count,
+        page: this.page,
+        pageSize: this.pageSize,
+        totalPages,
+        hasPrevPage: this.page > 1,
+        hasNextPage: this.page * this.pageSize < count,
+      },
+    };
+  };
+
+  private clearFindArgs(): void {
+    this.resetBaseFindAttributes();
+    this.orderBy = null;
+    this.page = FIND_ALL_DEFAULTS.page;
+    this.pageSize = FIND_ALL_DEFAULTS.pageSize;
+    this.paginated = false;
+  }
+
+  private get findArgs(): FindAllArgs<T> {
+    return {
+      omit: this.omit,
+      where: this.where,
+      ...(this.orderBy && { orderBy: this.orderBy }),
+      ...(this.select && { select: this.select }),
+      ...(this.paginated && {
+        skip: (this.page - 1) * this.pageSize,
+        take: this.pageSize,
+      }),
+    };
+  }
+
+  private onPaginationConfig() {
+    if (!this.paginated)
+      throw new ApiError("Pagination is not set. Use setPaginated() to enable pagination.", {
+        code: FIND_ALL_ERROR_CODES.VALIDATION,
+      });
+  }
+}

@@ -1,0 +1,35 @@
+import { MockInterface } from "@/test/__mocks__/common";
+
+import { FindAll } from "../methods/find-all";
+import { FindOne } from "../methods/find-one";
+import { Repository } from "../repository";
+
+export type MockFindAll<T> = MockInterface<FindAll<T>>;
+export type MockFindOne<T> = MockInterface<FindOne<T>>;
+export type MockRepository<T> = MockInterface<Repository<T>>;
+
+const findAllMock = <T>(): MockFindAll<T> => ({
+  execute: jest.fn(),
+  setOmit: jest.fn().mockReturnThis(),
+  setOrderBy: jest.fn().mockReturnThis(),
+  setPage: jest.fn().mockReturnThis(),
+  setPageSize: jest.fn().mockReturnThis(),
+  setPaginated: jest.fn().mockReturnThis(),
+  setSelect: jest.fn().mockReturnThis(),
+  setWhere: jest.fn().mockReturnThis(),
+});
+
+const findOneMock = <T>(): MockFindOne<T> => ({
+  execute: jest.fn(),
+  setOmit: jest.fn().mockReturnThis(),
+  setSelect: jest.fn().mockReturnThis(),
+  setWhere: jest.fn().mockReturnThis(),
+});
+
+export const createMockRepository = <T>(): MockRepository<T> => ({
+  create: jest.fn(),
+  delete: jest.fn(),
+  findAll: jest.fn().mockReturnValue(findAllMock<T>()),
+  findOne: jest.fn().mockReturnValue(findOneMock<T>()),
+  update: jest.fn(),
+});

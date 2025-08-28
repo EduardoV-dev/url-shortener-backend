@@ -14,11 +14,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  createdAt DateTime @default(now())
+  email     String   @unique
+  id        String   @id @default(uuid())
+  isDeleted Boolean  @default(false)
+  password  String
+  updatedAt DateTime @updatedAt
+  urls      Url[]
+}
+
 model Url {
-  clickCount  Int      @default(0)
-  createdAt   DateTime @default(now())
-  id          Int      @id @default(autoincrement())
-  originalUrl String
-  shortCode   String   @unique
-  updatedAt   DateTime @default(now())
+  createdAt DateTime @default(now())
+  id        String   @id @default(uuid())
+  isDeleted Boolean  @default(false)
+  longUrl   String
+  shortId   String   @unique @db.VarChar(10)
+  updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
 }

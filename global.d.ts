@@ -1,25 +1,37 @@
-import { Request, Response } from "express";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextFunction, Request, Response } from "express";
+// eslint-disable-next-line import/no-unresolved
 import { ParamsDictionary } from "express-serve-static-core";
 
-declare namespace NodeJS {
-  interface ProcessEnv {
-    CORS_ORIGINS: string;
-    DATABASE_URL: string;
-    NODE_ENV: "development" | "test" | "production";
-    PORT: string;
-    SWAGGER_SERVER_V1: string;
-  }
-}
-
 declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      BCRYPT_SALT_ROUNDS: string | undefined;
+      CORS_ORIGINS: string | undefined;
+      DATABASE_URL: string | undefined;
+      JWT_EXPIRES_IN: string | number | undefined;
+      JWT_SECRET: string | undefined;
+      LOG_LEVEL: string | undefined;
+      NODE_ENV: "development" | "production" | "test" | undefined;
+      PORT: string | undefined;
+    }
+  }
+
+  declare namespace Express {
+    export interface Request {
+      userId?: string;
+    }
+  }
+
   type ControllerMethod<
-    Params = ParamsDictionary,
+    Params extends ParamsDictionary = ParamsDictionary,
     ReqBody = any,
     ReqQuery = any,
     Locals extends Record<string, any> = Record<string, any>,
   > = (
     req: Request<Params, APIResponse, ReqBody, ReqQuery, Locals>,
     res: Response<APIResponse, Locals>,
+    next: NextFunction,
   ) => Promise<void>;
 
   interface APIResponse {

@@ -1,0 +1,25 @@
+export const API_VERSIONS = Object.freeze({
+  V1: "v1",
+});
+
+export const MORGAN_SETTING = "tiny";
+
+export const PRISMA_CODES = Object.freeze({
+  VALUE_TOO_LONG: "P2000",
+  UNIQUE_CONSTRAINT_FAILED: "P2002",
+  FOREIGN_KEY_CONSTRAINT_FAILED: "P2003",
+  RECORD_NOT_FOUND: "P2025",
+});
+
+export const HTTP_STATUS = Object.freeze({
+  OK: 200,
+  CREATED: 201,
+  NO_CONTENT: 204,
+  REDIRECT_FOUND: 302,
+  BAD_REQUEST: 400,
+  UNAUTHORIZED: 401,
+  FORBIDDEN: 403,
+  NOT_FOUND: 404,
+  CONFLICT: 409,
+  INTERNAL_SERVER_ERROR: 500,
+});

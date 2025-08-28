@@ -1,0 +1,133 @@
+import { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from "express";
+
+import { HTTP_STATUS } from "@/constants/common";
+import { MOCK_URL } from "@/test/__fixtures__/url";
+import { createTestServer, type Response } from "@/test/test-server";
+import { ApiError } from "@/utils/api-error";
+
+import routes from "../url.routes";
+import { UrlService } from "../url.service";
+
+// TODO: Place this mock in a global test setup file if used across multiple test files
+jest.mock("../url.service", () => ({
+  UrlServiceImpl: jest.fn().mockImplementation(
+    (): UrlService => ({
+      createShortUrl: jest.fn().mockImplementation((_url: string, userId?: string) => {
+        if (userId) return Promise.resolve({ ...MOCK_URL, userId });
+        else return Promise.resolve({ ...MOCK_URL, userId: null });
+      }),
+      findOneByShortId: jest.fn().mockImplementation((shortId: string) => {
+        if (shortId === "valid-short-id")
+          return Promise.resolve({ longUrl: "https://long-url.com" });
+        else return Promise.resolve(null);
+      }),
+      findAllByUserId: jest.fn().mockResolvedValue(MOCK_URL),
+      deleteOneByShortId: jest.fn().mockImplementation((shortId: string) => {
+        if (shortId === "valid-short-id") return Promise.resolve(MOCK_URL);
+        else
+          return Promise.reject(new ApiError("Url not found", { status: HTTP_STATUS.NOT_FOUND }));
+      }),
+    }),
+  ),
+}));
+
+// TODO: Place this mock in a global test setup file if used across multiple test files
+jest.mock("@/middlewares/auth", () => ({
+  bypassAuthenticationMiddleware: (
+    req: ExpressRequest,
+    _res: ExpressResponse,
+    next: NextFunction,
+  ) => {
+    if (req.header("Authorization") === "validToken") req.userId = MOCK_URL.userId || "";
+    else req.userId = undefined;
+
+    next();
+  },
+  authenticationMiddleware: (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
+    if (req.header("Authorization") !== "validToken")
+      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
+    else req.userId = "valid-user-id";
+    next();
+  },
+}));
+
+const request = createTestServer(routes);
+
+describe("/urls", () => {
+  describe("[POST] /", () => {
+    it("Should create a url anonymously", async () => {
+      const response = await request.post("").send({ url: "https://github.com/" });
+      expect(response.statusCode).toBe(HTTP_STATUS.CREATED);
+      expect(response.body).toHaveProperty("data.userId", null);
+    });
+
+    it("Should create an url with userId", async () => {
+      const response = await request
+        .post("")
+        .set("Authorization", "validToken")
+        .send({ url: "https://github.com/this-was-done-by-supertest" });
+
+      expect(response.statusCode).toBe(HTTP_STATUS.CREATED);
+      expect(response.body).toHaveProperty("data.userId", MOCK_URL.userId);
+    });
+
+    it("Should return 400 if url is not provided", async () => {
+      const response = await request.post("").send({});
+      assertUrlValidationError(response);
+    });
+
+    it("Should return 400 if url is empty", async () => {
+      const response = await request.post("").send({ url: "" });
+      assertUrlValidationError(response);
+    });
+
+    it("Should return 400 if url is not valid", async () => {
+      const response = await request.post("").send({ url: "invalid-url" });
+      assertUrlValidationError(response);
+    });
+  });
+
+  describe("[GET] /redirect/:shortId", () => {
+    it("Should redirect to the long URL", async () => {
+      const response = await request.get("/redirect/valid-short-id");
+      expect(response.statusCode).toBe(HTTP_STATUS.REDIRECT_FOUND);
+      expect(response.headers.location).toBe("https://long-url.com");
+      expect(response.body).toEqual({});
+    });
+
+    it("Should return 404 if shortId is not found", async () => {
+      const response = await request.get("/redirect/invalid-short-id");
+      expect(response.statusCode).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toHaveProperty("success", false);
+    });
+  });
+
+  describe("[DELETE] /:shortId", () => {
+    it("Fails on deletion and returns error with its status code", async () => {
+      const response = await request.delete("/invalid-short-id").set("Authorization", "validToken");
+      expect(response.statusCode).toBe(HTTP_STATUS.NOT_FOUND);
+      expect(response.body).toHaveProperty("success", false);
+    });
+
+    it("Succeeds on deletion and returns deleted url and its status code", async () => {
+      const response = await request.delete("/valid-short-id").set("Authorization", "validToken");
+      expect(response.statusCode).toBe(HTTP_STATUS.OK);
+      expect(response.body).toHaveProperty("success", true);
+
+      expect(response.body.data).toEqual({
+        ...MOCK_URL,
+        createdAt: MOCK_URL.createdAt.toISOString(),
+        updatedAt: MOCK_URL.updatedAt.toISOString(),
+      });
+    });
+  });
+});
+
+// === Utils
+
+const assertUrlValidationError = (response: Response) => {
+  expect(response.statusCode).toBe(400);
+  expect(response.body).toHaveProperty("success", false);
+  expect(response.body).toHaveProperty("data", null);
+  expect(response.body).toHaveProperty("error.url");
+};

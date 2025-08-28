@@ -4,8 +4,11 @@ coverage/
 
 # Environment variables
 .env
-.env.example
+.env*.local
 
 # Prisma
 prisma/migrations
 src/generated
+
+# Logs
+logs/

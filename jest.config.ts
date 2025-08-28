@@ -1,24 +1,32 @@
 import type { Config } from "jest";
 
-const jestConfig: Config = {
-  coveragePathIgnorePatterns: [
-    "/node_modules/",
-    "/src/tests/",
-    "/src/__tests__/",
-  ],
+export default {
+  coveragePathIgnorePatterns: ["/node_modules/", "/src/test/", "/src/generated"],
+  coverageThreshold: {
+    global: {
+      branches: 90,
+      functions: 90,
+      lines: 90,
+      statements: 90,
+    },
+  },
   moduleFileExtensions: ["ts", "js", "json"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
   preset: "ts-jest",
   roots: ["<rootDir>"],
-  setupFilesAfterEnv: ["<rootDir>/src/test/prisma-mock.ts"],
+  setupFilesAfterEnv: [
+    "<rootDir>/src/test/__mocks__/prisma.ts",
+    "<rootDir>/src/test/__mocks__/logger.ts",
+  ],
   testEnvironment: "node",
   testMatch: [
     "**/__tests__/**/*.ts",
     "**/?(*.)+(spec|test).ts",
     "!**/mocks.ts",
     "!**/*.mocks.ts",
+    "!**/__mocks__/*.ts",
   ],
   transform: {
     "^.+\\.js$": "babel-jest",
@@ -26,6 +34,4 @@ const jestConfig: Config = {
   },
   transformIgnorePatterns: ["/node_modules/(?!.*?nanoid)/"],
   verbose: true,
-};
-
-export default jestConfig;
+} as Config;
