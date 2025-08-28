@@ -3,9 +3,9 @@ import { Url } from "@/generated/prisma";
 import { executeFindAllWithParams, PaginationResponse, WithFindAllQueryParams } from "@/repository";
 import { ApiError } from "@/utils/api-error";
 import { logger } from "@/utils/logger";
+import { PrismaErrorHandlerImpl } from "@/utils/prisma-error-handler";
 import { Retry } from "@/utils/retry";
 
-import { PrismaErrorHandlerImpl } from "../../../utils/prisma-error-handler";
 import { CodeGenerator, MAX_CODE_LENGTH, MIN_CODE_LENGTH } from "./short-code-generator";
 import { UrlRepository } from "./url.repository";
 
