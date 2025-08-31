@@ -4,9 +4,12 @@ import { ApiError } from "@/utils/api-error";
 
 import authRoutes from "../auth.routes";
 
+jest.mock("@/middlewares/auth");
+
 jest.mock("../auth.service", () => {
-  const signup = jest.fn().mockResolvedValue({ token: "testToken", userId: "testUserId" });
-  const login = jest.fn().mockResolvedValue({ token: "testToken", userId: "testUserId" });
+  const token = "testToken";
+  const signup = jest.fn().mockResolvedValue(token);
+  const login = jest.fn().mockResolvedValue(token);
 
   class AuthServiceImpl {
     signup = signup;
@@ -35,7 +38,7 @@ describe("AuthRoutes /auth", () => {
     status: HTTP_STATUS.INTERNAL_SERVER_ERROR,
   });
 
-  describe("[POST] /register", () => {
+  describe("[POST] /auth/register", () => {
     it("Registers a new user", async () => {
       const response = await request.post("/register").send({
         ...authBody,
@@ -70,6 +73,46 @@ describe("AuthRoutes /auth", () => {
       });
       expect(response.statusCode).toBe(HTTP_STATUS.INTERNAL_SERVER_ERROR);
       expect(response.body).toHaveProperty("success", false);
+    });
+  });
+
+  describe("[POST] /auth/admin", () => {
+    const creationParams = {
+      email: "valid@email.com",
+      password: "password123",
+      confirmPassword: "password123",
+    };
+
+    it("Throws error response if validations are not met", async () => {
+      const response = await request.post("/admin").send({
+        email: "invalid-email",
+        password: "short",
+      });
+
+      expect(response.statusCode).toBe(HTTP_STATUS.BAD_REQUEST);
+      expect(response.body).toHaveProperty("success", false);
+      expect(response.body).toHaveProperty("error.email");
+      expect(response.body).toHaveProperty("error.password");
+      expect(response.body).toHaveProperty("error.confirmPassword");
+    });
+
+    it("Throws error response if user accessing the resource is not admin", async () => {
+      const response = await request
+        .post("/admin")
+        .set("Authorization", "jwt_token")
+        .send(creationParams);
+      expect(response.statusCode).toBe(HTTP_STATUS.FORBIDDEN);
+      expect(response.body).toHaveProperty("success", false);
+    });
+
+    it("Registers a new admin user using an admin user", async () => {
+      const response = await request
+        .post("/admin")
+        .set("Authorization", "validAdminToken")
+        .send(creationParams);
+      expect(response.statusCode).toBe(HTTP_STATUS.CREATED);
+      expect(response.body).toHaveProperty("success", true);
+      expect(response.body).toHaveProperty("data.token", "testToken");
     });
   });
 

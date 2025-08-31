@@ -1,5 +1,3 @@
-import { NextFunction, Request as ExpressRequest, Response as ExpressResponse } from "express";
-
 import { HTTP_STATUS } from "@/constants/common";
 import { MOCK_URL } from "@/test/__fixtures__/url";
 import { createTestServer, type Response } from "@/test/test-server";
@@ -31,25 +29,7 @@ jest.mock("../url.service", () => ({
   ),
 }));
 
-// TODO: Place this mock in a global test setup file if used across multiple test files
-jest.mock("@/middlewares/auth", () => ({
-  bypassAuthenticationMiddleware: (
-    req: ExpressRequest,
-    _res: ExpressResponse,
-    next: NextFunction,
-  ) => {
-    if (req.header("Authorization") === "validToken") req.userId = MOCK_URL.userId || "";
-    else req.userId = undefined;
-
-    next();
-  },
-  authenticationMiddleware: (req: ExpressRequest, res: ExpressResponse, next: NextFunction) => {
-    if (req.header("Authorization") !== "validToken")
-      return res.status(HTTP_STATUS.UNAUTHORIZED).json({ message: "Unauthorized" });
-    else req.userId = "valid-user-id";
-    next();
-  },
-}));
+jest.mock("@/middlewares/auth");
 
 const request = createTestServer(routes);
 

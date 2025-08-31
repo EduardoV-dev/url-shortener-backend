@@ -19,9 +19,8 @@ describe("ReadRepository | FindOne", () => {
     expect(findOne.execute).toBeDefined();
   });
 
-  it("Sets where and select conditions, then executes correctly", async () => {
+  it("Sets where, omit, and select conditions, then executes correctly", async () => {
     const url = {
-      createdAt: MOCK_URL.createdAt,
       id: MOCK_URL.id,
       longUrl: MOCK_URL.longUrl,
     } as Url;
@@ -30,6 +29,7 @@ describe("ReadRepository | FindOne", () => {
 
     const response = await findOne
       .setSelect({ createdAt: true, id: true, longUrl: true })
+      .setOmit({ createdAt: true })
       .setWhere({ id: "1" })
       .execute();
 

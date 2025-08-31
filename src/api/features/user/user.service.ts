@@ -6,7 +6,7 @@ import { logger } from "@/utils/logger";
 
 import { UserRepository } from "./user.repository";
 
-export type CreateUserParams = Pick<User, "email" | "password">;
+export type CreateUserParams = Pick<User, "email" | "password" | "isAdmin">;
 
 export interface UserService {
   /**
@@ -18,7 +18,6 @@ export interface UserService {
    */
   create: (params: CreateUserParams) => Promise<User>;
   /**
-   *
    * Retrieves a user by their email address.
    * @param email - The email address of the user to retrieve.
    * @returns A promise that resolves to the user if found, or null if not found
@@ -33,14 +32,17 @@ export interface UserService {
 export class UserServiceImpl implements UserService {
   constructor(private repository: UserRepository) {}
 
-  public create: UserService["create"] = async ({ email, password }) => {
+  public create: UserService["create"] = async ({ email, password, isAdmin }) => {
     logger.info(`Creating user with email: ${email}`);
-    const hashed = await bcrypt.hash(password, ENVS.BCRYPT_SALT_ROUNDS);
-    return this.repository.create({ email, password: hashed });
+    const hashed = await this.hashPassword(password);
+    return this.repository.create({ email, password: hashed, isAdmin });
   };
 
   public findByEmail: UserService["findByEmail"] = (email) => {
     logger.info(`Retrieving user for email: ${email}`);
     return this.repository.findOne().setWhere({ email }).execute();
   };
+
+  private hashPassword = (password: string): Promise<string> =>
+    bcrypt.hash(password, ENVS.BCRYPT_SALT_ROUNDS);
 }

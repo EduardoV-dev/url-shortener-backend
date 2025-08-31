@@ -1,7 +1,7 @@
 import { Router } from "express";
 
 import { prisma } from "@/libs/prisma";
-import { authenticationMiddleware, bypassAuthenticationMiddleware } from "@/middlewares/auth";
+import { jwtAuthGuard, optionalJwtAuthGuard } from "@/middlewares/auth";
 import { HttpRequestValidator } from "@/middlewares/http-request-validator";
 import { RetryImpl } from "@/utils/retry";
 
@@ -22,15 +22,10 @@ const controller = new UrlControllerImpl(service);
 const router = Router();
 
 router
-  .delete("/:shortId", authenticationMiddleware, controller.deleteUrl)
-  .get("", authenticationMiddleware, controller.getUrlsByUserId)
+  .delete("/:shortId", jwtAuthGuard, controller.deleteUrl)
+  .get("", jwtAuthGuard, controller.getUrlsByUserId)
   .get("/redirect/:shortId", controller.redirect)
-  .post(
-    "",
-    bypassAuthenticationMiddleware,
-    HttpRequestValidator.validate(urlSchema),
-    controller.createUrl,
-  );
+  .post("", optionalJwtAuthGuard, HttpRequestValidator.validate(urlSchema), controller.createUrl);
 
 export default router;
 
