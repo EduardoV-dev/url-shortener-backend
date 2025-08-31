@@ -63,7 +63,6 @@ export const optionalJwtAuthGuard = (req: Request, _res: Response, next: NextFun
 export const adminJwtAuthGuard = (req: Request, res: Response, next: NextFunction) => {
   try {
     const jwtPayload = verifyToken(req);
-    console.log(jwtPayload);
 
     if (!jwtPayload)
       return res.status(HTTP_STATUS.UNAUTHORIZED).json(
