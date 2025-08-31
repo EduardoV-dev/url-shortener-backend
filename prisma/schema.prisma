@@ -32,15 +32,15 @@ model Url {
   id        String     @id @default(uuid())
   isDeleted Boolean    @default(false)
   longUrl   String
-  qrCode    String?
+  qrCodeUrl String?
   shortId   String     @unique @db.VarChar(10)
   updatedAt DateTime   @updatedAt
+  urlVisits UrlVisit[]
   user      User?      @relation(fields: [userId], references: [id])
   userId    String?
-  UrlClick  UrlClick[]
 }
 
-model UrlClick {
+model UrlVisit {
   clickedAt DateTime @default(now())
   id        String   @id @default(uuid())
   ipAddress String?

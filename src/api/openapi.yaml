@@ -12,6 +12,55 @@ servers:
     description: "Localhost"
 
 paths:
+  /auth/admin:
+    post:
+      tags:
+        - auth
+      summary: "Register a new admin"
+      operationId: "registerAdmin"
+      requestBody:
+        description: "Admin registration details"
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserRegister"
+        required: true
+      responses:
+        201:
+          description: "Admin registered successfully"
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ApiSuccessResponse"
+                  - type: object
+                    properties:
+                      data:
+                        $ref: "#/components/schemas/AuthJWT"
+        400:
+          description: "Bad Request - Invalid input data"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        403:
+          description: "Forbidden - Only admins can register other admins"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        409:
+          description: "Conflict - Email already exists"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
+        500:
+          description: "Internal Server Error"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiErrorResponse"
   /auth/register:
     post:
       tags:
@@ -23,18 +72,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
-                  description: "Email address of the user"
-                password:
-                  type: string
-                  description: "Password for the user account, should be hashed"
-                confirmPassword:
-                  type: string
-                  description: "Password confirmation, should match the password"
+              $ref: "#/components/schemas/UserRegister"
         required: true
       responses:
         201:
@@ -47,7 +85,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: "#/components/schemas/User"
+                        $ref: "#/components/schemas/AuthJWT"
         400:
           description: "Bad Request - Invalid input data"
           content:
@@ -98,11 +136,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        type: object
-                        properties:
-                          token:
-                            type: string
-                            description: "JWT token"
+                        $ref: "#/components/schemas/AuthJWT"
         400:
           description: "Bad Request - Invalid input data"
           content:
@@ -309,9 +343,26 @@ components:
           type: object
           example: null
           description: "Error details for failed response"
+    AuthJWT:
+      type: object
+      properties:
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Ik1hcmdpZV9EdXJnYW5AZ21haWwuY29tIiwiaWQiOiJiYzhhZTYwNC03YzMxLTQwYmQtYTgxZi1lMDRmMDgwNDkzN2QiLCJpYXQiOjE3NTY0MTA2NTksImV4cCI6MTc1NjQ5NzA1OX0.AxYj_jYW9DeLL5Q2XlcTbkxcAdlxkkX1Km6aJU5bKLs"
+          description: "JWT Token to authenticate"
     Url:
       type: object
       properties:
+        clicks:
+          description: "Clicks count for the url"
+          example: 32
+          format: int64
+          type: integer
+        expiresAt:
+          description: "Expiration time"
+          format: date-time
+          nullable: true
+          type: string
         id:
           description: "Unique identifier for the short URL (UUID)"
           example: "123e4567-e89b-12d3-a456-426614174000"
@@ -329,6 +380,10 @@ components:
           example: "2023-10-01T12:00:00Z"
           format: date-time
           type: string
+        qrCodeUrl:
+          description: "QR code for url"
+          type: string
+          format: uri
         updatedAt:
           type: string
           format: date-time
@@ -338,19 +393,54 @@ components:
           example: "123e4567-e89b-12d3-a456-426614174001"
           nullable: true
           type: string
+        urlClicks:
+          description: "Statistics for url"
+          type: array
+          items:
+            $ref: "#/components/schemas/UrlVisit"
+    UrlVisit:
+      type: object
+      properties:
+        clickedAt:
+          description: "Date and time when the url was clicked"
+          format: date-time
+          type: string
+        id:
+          description: "Unique identifier for the UrlVisit (UUID)"
+          type: string
+          example: "123e4567-e89b-12d3-a456-426614174001"
+        ipAddress:
+          description: "IP Address of the device that used the url"
+          type: string
+          example: "192.168.1.1"
+        referrer:
+          description: "URL Referrer"
+          type: string
+          format: uri
+        urlId:
+          description: "ID of the Url that owns this object"
+          example: "123e4567-e89b-12d3-a456-426614174001"
+          type: string
+        userAgent:
+          description: "User agent for the device that clicked the url"
+          example: "Mozilla/5.0 (Linux; Android 15; SM-S931B Build/AP3A.240905.015.A2; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/127.0.6533.103 Mobile Safari/537.36"
+          type: string
     User:
       type: object
       properties:
         id:
           type: string
           description: "Unique identifier for the user (UUID)"
+          example: "123e4567-e89b-12d3-a456-426614174001"
         email:
           type: string
           format: email
           description: "Email address of the user"
+          example: "email@valid.com"
         password:
           type: string
           description: "Password of the user, should be hashed"
+          example: "valid-password-123"
         createdAt:
           type: string
           format: date-time
@@ -359,8 +449,25 @@ components:
           type: string
           format: date-time
           description: "Timestamp when the user was updated"
+        isAdmin:
+          type: boolean
+          description: "Flag that defines if user is admin or not"
+          example: false
         urls:
           type: array
           items:
             $ref: "#/components/schemas/Url"
           description: "List of URLs created by the user"
+    UserRegister:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          description: "Email address of the user"
+        password:
+          type: string
+          description: "Password for the user account, should be hashed"
+        confirmPassword:
+          type: string
+          description: "Password confirmation, should match the password"

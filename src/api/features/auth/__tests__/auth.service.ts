@@ -1,10 +1,11 @@
 import bcrypt from "bcrypt";
 
 import { HTTP_STATUS } from "@/constants/common";
+import { MOCK_USER } from "@/test/__fixtures__/user";
 import { MockInterface } from "@/test/__mocks__/common";
 import { ApiError } from "@/utils/api-error";
 
-import { MOCK_USER, MOCK_USER_SERVICE, MockUserService } from "../../user/__tests__/mocks";
+import { MOCK_USER_SERVICE, MockUserService } from "../../user/__tests__/mocks";
 import { AuthSchema } from "../auth.schemas";
 import { AuthService, AuthServiceImpl } from "../auth.service";
 
@@ -34,8 +35,8 @@ describe("Auth Service", () => {
   describe("signup", () => {
     it("should create an user", async () => {
       userService.create.mockResolvedValue(MOCK_USER);
-      const response = await authService.signup(AUTH_PARAMS);
-      expect(response).toEqual({ token: jwtToken, userId: MOCK_USER.id });
+      const response = await authService.signup({ ...AUTH_PARAMS, isAdmin: false });
+      expect(response).toEqual(jwtToken);
     });
   });
 
@@ -44,7 +45,7 @@ describe("Auth Service", () => {
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
       userService.findByEmail.mockResolvedValue(MOCK_USER);
       const response = await authService.login(AUTH_PARAMS);
-      expect(response).toEqual({ token: jwtToken, userId: MOCK_USER.id });
+      expect(response).toEqual(jwtToken);
     });
 
     it("Should throw if user is not found", async () => {

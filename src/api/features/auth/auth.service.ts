@@ -6,19 +6,8 @@ import { HTTP_STATUS } from "@/constants/common";
 import { User } from "@/generated/prisma";
 import { ApiError } from "@/utils/api-error";
 
-import { UserService } from "../user";
+import { CreateUserParams, UserService } from "../user";
 import { AuthSchema } from "./auth.schemas";
-
-export interface AuthResponse {
-  /**
-   * The JWT token issued upon successful authentication.
-   */
-  token: string;
-  /**
-   * The unique identifier of the authenticated user.
-   */
-  userId: string;
-}
 
 export interface AuthService {
   /**
@@ -27,26 +16,34 @@ export interface AuthService {
    * @returns A promise that resolves to the JWT token.
    * @throws ApiError if user creation fails.
    */
-  login: (params: AuthSchema) => Promise<AuthResponse>;
+  login: (params: AuthSchema) => Promise<string>;
   /**
    * Handles user signup requests.
    * @param param - The authentication parameters containing email and password.
    * @returns A promise that resolves to the JWT token.
    * @throws ApiError if user creation fails.
    */
-  signup: (param: AuthSchema) => Promise<AuthResponse>;
+  signup: (param: CreateUserParams) => Promise<string>;
+  /**
+   * Handles admin user signup requests.
+   * @param param - The authentication parameters containing email and password.
+   * @returns A promise that resolves to the JWT token.
+   * @throws ApiError if user creation fails.
+   */
 }
 
 export class AuthServiceImpl implements AuthService {
   constructor(private userService: UserService) {}
 
-  private createJwtToken = ({ email, id }: User): string =>
-    jwt.sign({ email, id }, ENVS.JWT_SECRET, { expiresIn: ENVS.JWT_EXPIRES_IN } as SignOptions);
+  private createJwtToken = ({ email, id, isAdmin }: User): string =>
+    jwt.sign({ email, id, isAdmin }, ENVS.JWT_SECRET, {
+      expiresIn: ENVS.JWT_EXPIRES_IN,
+    } as SignOptions);
 
   public signup: AuthService["signup"] = async (params) => {
     const user = await this.userService.create(params);
     const token = this.createJwtToken(user);
-    return { token, userId: user.id };
+    return token;
   };
 
   public login: AuthService["login"] = async (params) => {
@@ -58,6 +55,6 @@ export class AuthServiceImpl implements AuthService {
       throw new ApiError("Invalid password", { status: HTTP_STATUS.UNAUTHORIZED });
 
     const token = this.createJwtToken(user);
-    return { token, userId: user.id };
+    return token;
   };
 }

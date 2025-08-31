@@ -103,7 +103,7 @@ export class RetryImpl implements Retry {
 
         if (!this.shouldRetry(error, attempt)) throw lastError;
         this.onRetry(error, attempt);
-        if (attempt >= this.attempts) throw lastError;
+        if (attempt >= this.attempts) break;
 
         const actualDelay = this.backoff ? this.delayMs * attempt : this.delayMs;
         await new Promise((res) => setTimeout(res, actualDelay));
